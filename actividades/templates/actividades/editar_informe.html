@@ -1,0 +1,347 @@
+{% extends "base_actividades.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block titulo %}Editar Informe{% endblock titulo %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+<!-- O Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+
+<style>
+    /* Estilo para el área de arrastrar y soltar */
+    .drop-area {
+        border: 2px dashed #007bff;
+        padding: 30px;
+        text-align: center;
+        cursor: pointer;
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .drop-area p {
+        margin: 0;
+    }
+
+
+    /* Vista previa de los archivos */
+    .file-preview img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        margin: 5px;
+    }
+
+    .file-preview a {
+        display: block;
+        margin: 5px;
+    }
+
+    .hover {
+        background-color: #f0f8ff;
+    }
+</style>
+<style>
+    .evidencias-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .evidencia-item {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .evidencia-img {
+        width: 75px;
+        height: 75px;
+        max-width: 100%;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+
+    }
+
+    /* Estilo para el botón de eliminar */
+    .eliminar-evidencia {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background-color: red;
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        opacity: 0.8;
+    }
+
+    .eliminar-evidencia:hover {
+        opacity: 1;
+    }
+</style>
+{% endblock css %}
+
+{% block contenido %}
+<div class="content-wrapper">
+    <div class="flex-grow-1 container-p-y">
+        <div class="col-xl">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Editar Informe</h5>
+                    <small class="text-muted float-end">Actualiza la información del informe</small>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <!-- Renderiza los campos del formulario de Informe -->
+                        {% for field in form_informe %}
+                        <div class="form-group mb-3">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field|add_class:"form-control" }}
+                            {% if field.help_text %}
+                            <small class="form-text text-muted">{{ field.help_text }}</small>
+                            {% endif %}
+                            {% for error in field.errors %}
+                            <div class="alert alert-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+
+                        <div class="row">
+                            <!-- Columna del formulario -->
+                            <div class="col-md-6">
+                                <!-- Aquí va el código del formulario que ya tienes -->
+                                <div class="form-group mb-3">
+                                    <label class="py-2">Selecciona el tipo de evidencia:</label><br>
+                                    <input type="radio" id="radio-imagen" name="tipo-evidencia" value="imagen" checked>
+                                    <label for="radio-imagen">Imagen</label>
+                                    <input type="radio" id="radio-archivo" name="tipo-evidencia" value="archivo">
+                                    <label for="radio-archivo">Archivo</label>
+                                    <input type="radio" id="radio-link" name="tipo-evidencia" value="enlace">
+                                    <label for="radio-link">Link</label>
+                                </div>
+
+                                <div id="campo-imagen" class="form-group mb-3">
+                                    <label for="evidencia-imagen">Arrastra o selecciona una Imagen</label>
+                                    <div id="drop-area-imagen" class="drop-area">
+                                        <p>Arrastra aquí tus IMAGENES o haz clic para seleccionarlas</p>
+                                        <input type="file" id="file-input-imagen" name="imagen" class="d-none"
+                                            accept="image/*" />
+                                        <div id="file-preview-imagen" class="file-preview"></div>
+                                    </div>
+                                </div>
+
+                                <div id="campo-archivo" class="form-group mb-3" style="display: none;">
+                                    <label for="evidencia-archivo">Arrastra o selecciona un Archivo</label>
+                                    <div id="drop-area-archivo" class="drop-area">
+                                        <p>Arrastra aquí tus ARCHIVOS o haz clic para seleccionar</p>
+                                        <input type="file" id="file-input-archivo" name="archivo" class="d-none"
+                                            accept=".pdf, .docx, .doc, .xlsx, .pptx"/>
+                                        <div id="file-preview-archivo" class="file-preview"></div>
+                                    </div>
+                                </div>
+
+                                <div id="campo-link" class="form-group mb-3" style="display: none;">
+                                    <label for="input-link">Ingresa el enlace</label>
+                                    <input type="url" id="input-link" name="enlace" placeholder="https://example.com"
+                                        class="form-control">
+                                </div>
+                            </div>
+
+                            <!-- Columna de visualización de evidencias -->
+                            <div class="col-md-6">
+                                <div class="evidencias-list">
+                                    {% for evidencia in evidencias %}
+                                    <div class="evidencia-item py-2">
+                                        {% if evidencia.tipo == 'imagen' %}
+                                            <img src="{{ evidencia.imagen.url }}" class="evidencia-img" alt="Imagen de Evidencia"
+                                                 data-bs-toggle="tooltip" title="{{ evidencia.imagen }}" onclick="verArchivo('{{ evidencia.imagen.url }}')">
+                                        {% elif evidencia.tipo == 'pdf' %}
+                                            <i class="bx bxs-file-pdf " style="font-size: 83px; color: red;" data-bs-toggle="tooltip" title="{{ evidencia.archivo }}" onclick="verArchivo('{{ evidencia.archivo.url }}')"></i>
+                                        {% elif evidencia.tipo == 'excel' %}
+                                            <i class="bx bxs-file-plus " style="font-size: 83px; color: green;" data-bs-toggle="tooltip" title="{{ evidencia.archivo }}" onclick="verArchivo('{{ evidencia.archivo.url }}')"></i>
+                                        {% elif evidencia.tipo == 'word' %}
+                                            <i class="bx bxs-file-doc " style="font-size: 83px; color: #0066cc;" data-bs-toggle="tooltip" title="{{ evidencia.archivo }}" onclick="verArchivo('{{ evidencia.archivo.url }}')"></i>
+                                        {% elif evidencia.tipo == 'enlace' %}
+                                        <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                                            <i class="bx bx-link-alt" style="font-size: 50px; color: #007bff;" data-bs-toggle="tooltip" title="{{ evidencia.enlace }}" onclick="verArchivo('{{ evidencia.enlace }}')"></i>
+                                        </div>
+                                        {% else %}
+                                        <i class="bx bxs-file " style="font-size: 83px; color: orange;" data-bs-toggle="tooltip" title="{{ evidencia.archivo }}" onclick="verArchivo('{{ evidencia.archivo.url }}')"></i>
+                                        {% endif %}
+                                        <span class="eliminar-evidencia" data-id="{{ evidencia.id }}">x</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-3">
+                            <div>
+                                <button class="btn btn-warning me-2" name="action" value="firmar">Firmar</button>
+
+                            </div>
+                            <div>
+
+                                <a href="{% url 'listar_informe' informe.actividad.id %}"
+                                    class="btn btn-secondary ms-2">Cancelar</a>
+                                <button class="btn btn-primary" name="action" value="guardar">Guardar cambios</button>
+                            </div>
+
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock contenido %}
+
+{% block js %}
+<script src="{% static 'tinymce/tinymce.min.js' %}"></script>
+<script>
+    tinymce.init({
+        selector: 'textarea[name="contenido"]',
+        height: 400,
+        menubar: false,
+        plugins: 'lists link image preview',
+        //toolbar: 'undo redo | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | preview',
+        toolbar: 'undo redo | bold italic | alignleft aligncenter alignright alignjustify | preview',
+        setup: function(editor) {
+            editor.on('change', function() {
+                editor.save(); // Guarda el contenido en el textarea
+            });
+        }
+    });
+</script>
+
+<script>
+    // Función para abrir el archivo en una nueva pestaña sin descargarlo
+    function verArchivo(url) {
+        window.open(url, '_blank'); // Abre el archivo en una nueva pestaña
+    }
+    // Eliminar evidencia sin interferir con la visualización
+    $(document).on('click', '.eliminar-evidencia', function(e) {
+        e.preventDefault();
+        e.stopPropagation(); // Prevenir que el clic en "X" abra el archivo
+        var evidencia_id = $(this).data('id');
+        var $this = $(this);
+        $.ajax({
+            url: '/actividades/eliminar_evidencia/' + evidencia_id + '/',
+            type: 'GET',
+            success: function(response) {
+                $this.parent().remove();
+            },
+            error: function(response) {
+                alert('Error al eliminar la evidencia.');
+            }
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Mostrar el campo correspondiente según el radio seleccionado
+        function mostrarCampoEvidencia() {
+            const tipo = document.querySelector('input[name="tipo-evidencia"]:checked').value;
+            document.getElementById('campo-imagen').style.display = tipo === 'imagen' ? 'block' : 'none';
+            document.getElementById('campo-archivo').style.display = tipo === 'archivo' ? 'block' : 'none';
+            document.getElementById('campo-link').style.display = tipo === 'enlace' ? 'block' : 'none';
+        }
+        // Agregar eventos de cambio a los radio buttons
+        document.querySelectorAll('input[name="tipo-evidencia"]').forEach(radio => {
+            radio.addEventListener('change', mostrarCampoEvidencia);
+        });
+        // Llamar a la función al cargar la página para que muestre el campo de imagen por defecto
+        mostrarCampoEvidencia();
+        // Configurar el manejo de arrastrar y soltar para cada tipo de campo
+        const dropAreas = {
+            imagen: {
+                dropArea: 'drop-area-imagen',
+                fileInput: 'file-input-imagen',
+                preview: 'file-preview-imagen'
+            },
+            archivo: {
+                dropArea: 'drop-area-archivo',
+                fileInput: 'file-input-archivo',
+                preview: 'file-preview-archivo'
+            }
+        };
+        Object.values(dropAreas).forEach(({
+            dropArea,
+            fileInput,
+            preview
+        }) => {
+            const area = document.getElementById(dropArea);
+            const input = document.getElementById(fileInput);
+            const filePreview = document.getElementById(preview);
+            area.addEventListener('dragover', e => {
+                e.preventDefault();
+                area.classList.add('hover');
+            });
+            area.addEventListener('dragleave', () => {
+                area.classList.remove('hover');
+            });
+            area.addEventListener('drop', e => {
+                e.preventDefault();
+                area.classList.remove('hover');
+                const files = e.dataTransfer.files;
+                input.files = files;
+                handleFiles(files, filePreview);
+            });
+            area.addEventListener('click', () => {
+                input.click();
+            });
+            input.addEventListener('change', () => {
+                handleFiles(input.files, filePreview);
+            });
+        });
+
+        function handleFiles(files, previewContainer) {
+            previewContainer.innerHTML = '';
+            for (let file of files) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const previewElement = document.createElement('div');
+                    previewElement.className = 'file-preview-item';
+                    if (file.type.startsWith('image/')) {
+                        const img = document.createElement('img');
+                        img.src = reader.result;
+                        previewElement.appendChild(img);
+                    } else {
+                        const link = document.createElement('a');
+                        link.href = reader.result;
+                        link.textContent = file.name;
+                        link.target = '_blank';
+                        previewElement.appendChild(link);
+                    }
+                    previewContainer.appendChild(previewElement);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    });
+</script>
+<!-- Habilitar tooltips de Bootstrap -->
+<script>
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+</script>
+
+
+{% endblock js %}

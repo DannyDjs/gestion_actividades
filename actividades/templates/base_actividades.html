@@ -1,0 +1,292 @@
+{% load static %}
+<!DOCTYPE html>
+
+<html lang="es" class="light-style layout-menu-fixed customizer-hide" dir="ltr" data-theme="theme-default"
+  data-assets-path="{% static '' %} " data-template="vertical-menu-template-free">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+
+  <title>{% block titulo %} {% endblock titulo %}</title>
+
+  <meta name="description" content="" />
+
+  {% block css %}
+  {% endblock css %}
+
+  <!-- Icono -->
+  <link rel="icon" type="image/x-icon" href="{% static 'img/cesmag.png' %} " />
+
+  <!-- Fuentes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+    rel="stylesheet" />
+
+  <!-- Iconos. Descomenta las fuentes de iconos requeridas -->
+  <link rel="stylesheet" href="{% static 'vendor/fonts/boxicons.css' %} " />
+
+  <!-- CSS Principal -->
+  <link rel="stylesheet" href="{% static 'vendor/css/core.css' %}" class="template-customizer-core-css" />
+  <link rel="stylesheet" href="{% static 'vendor/css/theme-default.css' %}" class="template-customizer-theme-css" />
+  <link rel="stylesheet" href="{% static 'css/demo.css' %}" />
+  <!-- CSS de Proveedores -->
+  <link rel="stylesheet" href="{% static 'vendor/libs/perfect-scrollbar/perfect-scrollbar.css' %}" />
+  
+  <link rel="stylesheet" href="{% static 'vendor/css/pages/page-auth.css' %}" />
+
+  <!-- CSS de la Página -->
+
+  <!-- Ayudantes -->
+  <script src="{% static 'vendor/js/helpers.js' %} "></script>
+
+  <!--! Los archivos del personalizador de plantillas y de configuración del tema DEBEN incluirse después de las hojas de estilo principales y helpers.js en la sección <head> -->
+  <!--? Config:  Archivo de configuración de tema obligatorio que contiene variables globales y opciones de tema por defecto, Establece tu opción de tema preferida en este archivo.  -->
+  <script src="{% static 'js/config.js' %} "></script>
+</head>
+
+<body>
+  <!-- Layout wrapper -->
+  <div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+      <!-- Menu -->
+
+      <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+        <div class="navbar-brand text-success logo h1 align-self-center">
+          <div class="text-center">
+            <a href="" class="app-brand-link center">
+              <img src="{% static 'img/cesmag.png' %}" alt="logo saboorandino" style="width: 80px;">
+            </a>
+          </div>
+
+        </div>
+
+        <div class="menu-inner-shadow"></div>
+
+        <ul class="menu-inner py-1">
+          <!-- Dashboard -->
+          <li class="menu-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+            <a href="{% url 'dashboard' %}" class="menu-link">
+              <i class="menu-icon tf-icons bx bx-home-circle"></i>
+              <div>Inicio</div>
+            </a>
+          </li>
+
+          <li class="menu-header small text-uppercase">
+            <span class="menu-header-text">Gestión de actividades</span>
+          </li>
+
+          {% if can_view_actividad %}
+          <li class="menu-item {% if request.resolver_match.url_name == 'listar_actividad' or request.resolver_match.url_name == 'listar_informe' or request.resolver_match.url_name == 'editar_informe' %}active{% endif %}">
+            <a href="{% url 'listar_actividad' %}" class="menu-link">
+              <i class="menu-icon tf-icons bx bx-list-ul"></i>
+              <div>Actividades</div>
+            </a>
+          </li>
+          {% endif %}
+
+          {% if can_view_tipoactividad %}
+          <li class="menu-item {% if request.resolver_match.url_name == 'listar_tipos' %}active{% endif %}">
+            <a href="{% url 'listar_tipos' %}" class="menu-link">
+              <i class="menu-icon tf-icons bx bx-tag"></i>
+              <div>Tipo Actividades</div>
+            </a>
+          </li>
+          {% endif %}
+
+          <li class="menu-header small text-uppercase">
+            <span class="menu-header-text">Gestión Usuarios</span>
+          </li>
+
+          {% if can_view_user %}
+          <li class="menu-item {% if request.resolver_match.url_name == 'listar_usuarios' %}active{% endif %}">
+            <a href="{% url 'listar_usuarios' %}" class="menu-link">
+              <i class="menu-icon tf-icons bx bx-user"></i>
+              <div>Usuario</div>
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+
+      </aside>
+      <!-- / Menu -->
+
+      <!-- Layout container -->
+      <div class="layout-page">
+        <!-- Navbar -->
+        <nav
+          class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
+          id="layout-navbar">
+          <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
+            <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">
+              <i class="bx bx-menu bx-sm"></i>
+            </a>
+          </div>
+
+          <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+
+            {% block buscar %}
+              
+            {% endblock buscar %}
+            
+
+            <ul class="navbar-nav flex-row align-items-center ms-auto">
+
+              <!-- User -->
+              <li class="nav-item navbar-dropdown dropdown-user dropdown">
+                <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
+                  <div class="avatar avatar-online">
+                    {% if user.perfilusuario.img_usuario %}
+                    <img src="{{ user.perfilusuario.img_usuario.url }}" alt="foto de perfil"
+                      class="w-px-40 h-auto rounded-circle" />
+                    {% else %}
+                    <img src="{% static 'img/perfil.png' %}" alt="foto de perfil"
+                      class="w-px-40 h-auto rounded-circle" />
+                    {% endif %}
+                  </div>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li>
+                    <a class="dropdown-item" href="#">
+                      <div class="d-flex">
+                        <div class="flex-shrink-0 me-3">
+                          <div class="avatar avatar-online">
+                            {% if user.perfilusuario.img_usuario %}
+                            <img src="{{ user.perfilusuario.img_usuario.url }}" alt="foto de perfil"
+                              class="w-px-40 h-auto rounded-circle" />
+                            {% else %}
+                            <img src="{% static 'img/perfil.png' %}" alt="foto de perfil"
+                              class="w-px-40 h-auto rounded-circle" />
+                            {% endif %}
+                          </div>
+                        </div>
+                        <div class="flex-grow-1">
+                          <span class="fw-semibold d-block">{{ user.first_name }} {{ user.last_name }}</span>
+                          <small class="text-muted">
+                            {% if user.groups.first %}
+                            {{ user.groups.first.name }}
+                            {% else %}
+                            Sin grupo
+                            {% endif %}</small>
+                        </div>
+                      </div>
+                    </a>
+                  </li>
+                  <li>
+                    <div class="dropdown-divider"></div>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="{% url 'perfil' %}">
+                      <i class="bx bx-user me-2"></i>
+                      <span class="align-middle">Mi perfil</span>
+                    </a>
+                  </li>
+
+                  <li>
+                    <div class="dropdown-divider"></div>
+                  </li>
+
+                  <li>
+                    <a class="dropdown-item" href="{% url 'logout' %}" class="menu-link"
+                      onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                      <i class="bx bx-power-off me-2"></i>
+                      <span class="align-middle">Cerrar sesion</span>
+                    </a>
+                  </li>
+                  <form id="logout-form" method="post" action="{% url 'logout' %}" style="display: none;">
+                    {% csrf_token %}
+                  </form>
+                </ul>
+              </li>
+              <!--/ User -->
+            </ul>
+          </div>
+
+        </nav>
+        <!-- / Navbar -->
+
+        <!-- Content wrapper -->
+        <div class="content-wrapper">
+
+          <!-- Content -->
+          <div class="container-xxl flex-grow-1 container-p-y">
+            <!-- Alertas -->
+            <!-- 
+            {% if messages %}
+            <div class="alert alert-dismissible fade show" role="alert">
+              {% for message in messages %}
+              <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                {{ message }}
+              </div>
+              {% endfor %}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+            -->
+            
+            <!-- / Alertas -->
+
+            {% block contenido %} {% endblock contenido %}
+          </div>
+          <!-- / Content -->
+          <div class="content-backdrop fade"></div>
+
+          <!-- Footer -->
+          <!-- <footer class="content-footer footer bg-footer-theme">
+            <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+              <div class="mb-2 mb-md-0">
+                ©
+                <script>
+                  document.write(new Date().getFullYear());
+                </script>
+
+              </div>
+              <div>
+
+                <a href="https://github.com/themeselection/sneat-html-admin-template-free/issues" target="_blank"
+                  class="footer-link me-4">Sistema de gestion de actividades</a>
+              </div>
+            </div>
+          </footer> -->
+          <!-- / Footer -->
+        </div>
+
+        <!-- Content wrapper -->
+
+      </div>
+      <!-- / Layout page -->
+    </div>
+
+    <!-- Overlay -->
+    <div class="layout-overlay layout-menu-toggle"></div>
+  </div>
+  <!-- / Layout wrapper -->
+
+  <!-- Core JS -->
+  <!-- build:js assets/vendor/js/core.js -->
+  <script src="{% static 'vendor/libs/jquery/jquery.js' %} "></script>
+  <script src="{% static 'vendor/libs/popper/popper.js' %} "></script>
+  <script src="{% static 'vendor/js/bootstrap.js' %} "></script>
+  <script src="{% static 'vendor/libs/perfect-scrollbar/perfect-scrollbar.js' %} "></script>
+
+  <script src="{% static 'vendor/js/menu.js' %} "></script>
+  <!-- endbuild -->
+
+  <!-- Main JS -->
+  <script src="{% static 'js/main.js' %} "></script>
+
+  <!-- Page JS -->
+  <script src="{% static 'js/dashboards-analytics.js' %} "></script>
+
+  <!-- Place this tag in your head or just before your close body tag. -->
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  {% block js %}
+  
+  {% endblock js %}
+</body>
+
+</html>

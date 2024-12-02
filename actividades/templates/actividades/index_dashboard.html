@@ -1,0 +1,160 @@
+{% extends "base_actividaes.html" %}
+{% load static %}
+
+{% block titulo %}inicio dashboard{% endblock titulo %}
+{% block css %}{% endblock css %}
+
+{% block contenido %}
+<!-- Content wrapper -->
+<div class="content-wrapper">
+    <!-- Content -->
+    <div class="container-xxl flex-grow-1 container-p-y">
+      <div class="row">
+        <div class="col-lg-5 col-md-4 order-1">
+          <div class="row">
+            <div class="col-lg-6 col-md-12 col-6 mb-4">
+              <div class="card">
+                <div class="card-body">
+                  <div class="card-title d-flex align-items-start justify-content-between">
+                    <div class="avatar flex-shrink-0">
+                      <img
+                        src="{% static 'img/icons/unicons/plato.png' %}"
+                        alt="chart success"
+                        class="rounded"
+                      />
+                    </div>
+                    <div class="dropdown">
+                      <button
+                        class="btn p-0"
+                        type="button"
+                        id="cardOpt3"
+                        data-bs-toggle="dropdown"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                      >
+                        <i class="bx bx-dots-vertical-rounded"></i>
+                      </button>
+                      <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt3">
+                        <a class="dropdown-item" href="javascript:void(0);">View More</a>
+                        <a class="dropdown-item" href="javascript:void(0);">Delete</a>
+                      </div>
+                    </div>
+                  </div>
+                  <span class="fw-semibold d-block mb-1">platos</span>
+                  <h3 class="card-title mb-2">{{ cantidad_platos }}</h3>
+                  
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-6 col-md-12 col-6 mb-4">
+              <div class="card">
+                <div class="card-body">
+                    <div class="card-title d-flex align-items-start justify-content-between">
+                      <div class="avatar flex-shrink-0">
+                        <img src="{% static 'img/icons/unicons/evento.png' %}" alt="Credit Card" class="rounded" />
+                      </div>
+                      <div class="dropdown">
+                        <button
+                          class="btn p-0"
+                          type="button"
+                          id="cardOpt1"
+                          data-bs-toggle="dropdown"
+                          aria-haspopup="true"
+                          aria-expanded="false"
+                        >
+                          <i class="bx bx-dots-vertical-rounded"></i>
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="cardOpt1">
+                          <a class="dropdown-item" href="javascript:void(0);">View More</a>
+                          <a class="dropdown-item" href="javascript:void(0);">Delete</a>
+                        </div>
+                      </div>
+                    </div>
+                    <span class="fw-semibold d-block mb-1">Eventos</span>
+                    <h3 class="card-title mb-2">{{ cantidad_eventos }}</h3>
+                    
+                  </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!--/ Total Revenue -->
+        <div class="col-12 col-md-8 col-lg-5 order-3 order-md-2">
+          <div class="row">
+            <div class="col-6 mb-4">
+              <div class="card">
+                <div class="card-body">
+                  <div class="card-title d-flex align-items-start justify-content-between">
+                    <div class="avatar flex-shrink-0">
+                      <img src="{% static 'img/icons/unicons/estrella.png' %}" alt="Calificacion" class="rounded" />
+                    </div>
+                    <div class="dropdown">
+                      <button
+                        class="btn p-0"
+                        type="button"
+                        id="cardOpt4"
+                        data-bs-toggle="dropdown"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                      >
+                        <i class="bx bx-dots-vertical-rounded"></i>
+                      </button>
+                      <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt4">
+                        <a class="dropdown-item" href="javascript:void(0);">View More</a>
+                        <a class="dropdown-item" href="javascript:void(0);">Delete</a>
+                      </div>
+                    </div>
+                  </div>
+                  <span class="d-block mb-1">Calificaciones</span>
+                  <h3 class="card-title text-nowrap mb-2">{{ cantidad_calificaciones }}</h3>
+                  
+                </div>
+              </div>
+            </div>
+            <div class="col-6 mb-4">
+              <div class="card">
+                <div class="card-body">
+                  <div class="card-title d-flex align-items-start justify-content-between">
+                    <div class="avatar flex-shrink-0">
+                      <img src="{% static 'img/icons/unicons/comentario.png' %}" alt="Credit Card" class="rounded" />
+                    </div>
+                    <div class="dropdown">
+                      <button
+                        class="btn p-0"
+                        type="button"
+                        id="cardOpt1"
+                        data-bs-toggle="dropdown"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                      >
+                        <i class="bx bx-dots-vertical-rounded"></i>
+                      </button>
+                      <div class="dropdown-menu" aria-labelledby="cardOpt1">
+                        <a class="dropdown-item" href="javascript:void(0);">View More</a>
+                        <a class="dropdown-item" href="javascript:void(0);">Delete</a>
+                      </div>
+                    </div>
+                  </div>
+                  <span class="fw-semibold d-block mb-1">Comentarios</span>
+                  <h3 class="card-title mb-2">{{ cantidad_comentarios }}</h3>
+                  
+                </div>
+              </div>
+            </div>
+        </div>
+        
+        
+
+        
+
+
+      </div>
+      
+    </div>
+    <!-- / Content -->
+
+    
+  </div>
+  <!-- Content wrapper -->
+{% endblock contenido %}
+{% block js %}{% endblock js %}

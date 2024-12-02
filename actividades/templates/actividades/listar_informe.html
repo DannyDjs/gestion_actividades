@@ -1,0 +1,498 @@
+{% extends "base_actividades.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block titulo %}Listar Informes{% endblock titulo %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+{% endblock css %}
+
+{% block buscar %}
+<!-- Buscar -->
+{% if can_view_informe %}
+
+{% endif %}
+<!-- /Buscar -->
+{% endblock buscar %}
+{% block contenido %}
+<div class="row">
+  <div class="col-xl-12">
+    <div class="nav-align-top mb-4">
+      <ul class="nav nav-pills mb-3" role="tablist">
+        <li class="nav-item">
+          <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab"
+            data-bs-target="#navs-pills-top-home" aria-controls="navs-pills-top-home" aria-selected="true">
+            Informes
+          </button>
+        </li>
+        <li class="nav-item">
+          <button type="button" class="nav-link" role="tab" data-bs-toggle="tab"
+            data-bs-target="#navs-pills-top-profile" aria-controls="navs-pills-top-profile" aria-selected="false">
+            Detalles
+          </button>
+        </li>
+        <li class="nav-item">
+          <button type="button" class="nav-link" role="tab" data-bs-toggle="tab"
+            data-bs-target="#navs-pills-top-messages" aria-controls="navs-pills-top-messages" aria-selected="false">
+            Colaboradores
+          </button>
+        </li>
+      </ul>
+      <!-- Lista informes de la actividad -->
+      <div class="tab-content">
+        <div class="tab-pane fade show active" id="navs-pills-top-home" role="tabpanel">
+          <div class="d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Lista de Informes</h4>
+            {% if es_director %}
+            {% endif %}
+            {% if es_colaborador %}
+            <form method="POST" action="{% url 'firmar_todos_informes' actividad.id %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-primary">Firmar Todo</button>
+            </form>
+            {% endif %}
+
+          </div>
+          <div
+            class="table-responsive-md table-responsive-sm table-responsive-lg table-responsive-xl table-responsive-xxl">
+            <table class="table table-hover ">
+              <thead>
+                <tr>
+                  <th>N°</th>
+                  <th>titulo</th>
+                  <th>Fecha de inicio y fin</th>
+                  <th>Firmado Por</th>
+                  <th>Falta Firmar</th>
+                  <th>Estado</th>
+                  <th>Opciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for informe in informes %}
+                <tr class="table-row"
+                  onclick="window.location.href='{% if es_director %} {% endif %}{% if es_colaborador %}{% if can_change_informe %}{% url 'editar_informe' informe.id %}{% endif %}{% endif %}'"
+                  style="cursor:pointer;">
+                  <td class="col-1">{{ forloop.counter }}</td>
+                  <td class="text-truncate" style="max-width: 200px;" data-bs-toggle="tooltip" data-bs-placement="top"
+                    title="{{ informe.titulo }}">{{ informe.titulo }}</td>
+                  <td class="col-2">{{ informe.fecha_inicio|date:"d/m/Y" }} a {{ informe.fecha_fin|date:"d/m/Y" }}</td>
+
+                  <td class="col-1">
+                    <ul class="list-unstyled users-list m-0 avatar-group d-flex align-items-center">
+                      {% if informe.usuarios_firmados %}
+                      {% for usuario in informe.usuarios_firmados %}
+                      <li data-bs-toggle="tooltip" data-popup="tooltip-custom" data-bs-placement="top"
+                        class="avatar avatar-xs pull-up" title="{{ usuario.first_name }} {{ usuario.last_name }}">
+                        <img src="
+                                      {% if usuario.perfilusuario.img_usuario %}
+                                          {{ usuario.perfilusuario.img_usuario.url }}
+                                      {% else %}
+                                          {% static '/img/perfil.png' %}
+                                      {% endif %}" alt="{{ usuario.first_name }} {{ usuario.last_name }}"
+                          class="rounded-circle" />
+                      </li>
+                      {% endfor %}
+                      {% else %}
+                      <span>Nadie ha firmado</span>
+                      {% endif %}
+                    </ul>
+                  </td>
+
+                  <td class="col-1">
+                    <ul class="list-unstyled users-list m-0 avatar-group d-flex align-items-center">
+                      {% if informe.usuarios_no_firmados %}
+                      {% for usuario in informe.usuarios_no_firmados %}
+                      <li data-bs-toggle="tooltip" data-popup="tooltip-custom" data-bs-placement="top"
+                        class="avatar avatar-xs pull-up" title="{{ usuario.first_name }} {{ usuario.last_name }}">
+                        <img src="
+                                        {% if usuario.perfilusuario.img_usuario %}
+                                            {{ usuario.perfilusuario.img_usuario.url }}
+                                        {% else %}
+                                            {% static '/img/perfil.png' %}
+                                        {% endif %}" alt="{{ usuario.first_name }} {{ usuario.last_name }}" class="rounded-circle" />
+                      </li>
+                      {% endfor %}
+                      {% else %}
+                      <span>No</span>
+                      {% endif %}
+                    </ul>
+                  </td>
+
+                  <td class="col-1">
+                    {% if informe.estado_firma_usuario %}
+                    <span class="badge bg-success">Firmado</span>
+                    {% else %}
+                    <span class="badge bg-danger">No Firmado</span>
+                    {% endif %}
+                  </td>
+                  <td class="acciones col-1" onclick="event.stopPropagation();">
+                    <div class="dropdown">
+                      <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                        <i class="bx bx-dots-vertical-rounded"></i>
+                      </button>
+                      <div class="dropdown-menu">
+
+                        {% if es_director %}
+
+                        {% endif %}
+                        {% if es_colaborador %}
+                        {% if can_change_informe %}
+                        <a class="dropdown-item" data-id="{{ informe.id }}" data-titulo="{{ informe.titulo }}"
+                          data-fecha-inicio="{{ actividad.fecha_inicio|date:'Y-m-d' }}"
+                          data-fecha-fin="{{ actividad.fecha_fin|date:'Y-m-d' }}" data-bs-toggle="modal"
+                          data-bs-target="#editarInformeModal">
+                          <i class="bx bx-edit me-2"></i> Editar
+                        </a>
+                        {% endif %}
+                        {% if can_delete_informe %}
+
+                        <a class="dropdown-item {% if informe.es_creador %}disabled{% endif %}" href="#"
+                          data-bs-toggle="modal" data-bs-target="#confirmDeleteModal"
+                          onclick="setDeleteFormAction('{% url 'eliminar_informe' informe.id %}')">
+                          <i class="bx bx-trash me-2"></i> Eliminar
+                        </a>
+
+                        {% endif %}
+                        {% endif %}
+
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="7" class="text-center">No hay informes disponibles.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% if es_director %}
+          {% if can_add_informe %}
+          <button class="btn-flotante" data-actividad-id="{{ actividad.id }}" data-bs-toggle="modal"
+            data-bs-target="#agregarInformeModal" id="btnAgregarInforme" disabled>+</button>
+          {% endif %}
+          {% endif %}
+          {% if es_colaborador %}
+          {% if can_add_informe %}
+          <button class="btn-flotante" data-actividad-id="{{ actividad.id }}" data-bs-toggle="modal"
+            data-bs-target="#agregarInformeModal" id="btnAgregarInforme">+</button>
+          {% endif %}
+          {% endif %}
+
+          <!-- Modal agregar informe -->
+          <div class="modal fade" id="agregarInformeModal" tabindex="-1" aria-labelledby="agregarInformeModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="agregarInformeModalLabel">Agregar Informe</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <form method="post" id="formularioAgregarInforme" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% for field in form_informe %}
+                    <div class="form-group mb-3">
+
+                      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                      {{ field|add_class:"form-control" }}
+                      {% if field.help_text %}
+                      <small class="form-text text-muted">{{ field.help_text }}</small>
+                      {% endif %}
+                      {% for error in field.errors %}
+                      <div class="alert alert-danger">{{ error }}</div>
+                      {% endfor %}
+                    </div>
+                    {% endfor %}
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                      <button type="submit" class="btn btn-primary">Guardar Informe</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal editar informe -->
+          <div class="modal fade" id="editarInformeModal" tabindex="-1" aria-labelledby="editarInformeModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="editarInformeModalLabel">Editar Informe</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <form method="post" id="formularioEditarInforme" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <input type="hidden" id="informe-id" name="informe_id" value="">
+
+                    {% for field in form_informe %}
+                    <div class="form-group mb-3">
+                      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                      {{ field|add_class:"form-control" }}
+                      {% if field.help_text %}
+                      <small class="form-text text-muted">{{ field.help_text }}</small>
+                      {% endif %}
+                      {% for error in field.errors %}
+                      <div class="alert alert-danger">{{ error }}</div>
+                      {% endfor %}
+                    </div>
+                    {% endfor %}
+                  </form>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                  <button type="submit" class="btn btn-primary" form="formularioEditarInforme">Guardar Informe</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal eliminar actividad -->
+          <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminación</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  ¿Estás seguro de que deseas eliminar este Informe?
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                  <form id="delete-form" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detalles de la Actividad -->
+        <div class="tab-pane fade" id="navs-pills-top-profile" role="tabpanel">
+          <div class="container-fluid">
+            <div class="row align-items-center">
+              <!-- Columna de detalles -->
+              <div class="col-md-6 col-sm-12">
+                <h5 class="mb-3">Detalles de la Actividad</h5>
+                <p><strong>Título:</strong> {{ actividad.titulo }}</p>
+                <p><strong>Tipo:</strong> {{ actividad.tipo }}</p>
+                <p><strong>Descripción:</strong> {{ actividad.descripcion }}</p>
+                <p><strong>Lugar:</strong> {{ actividad.lugar }}</p>
+                <p><strong>Fecha de Inicio:</strong> {{ actividad.fecha_inicio }}</p>
+                <p><strong>Fecha de Fin:</strong> {{ actividad.fecha_fin }}</p>
+              </div>
+              <!-- Columna de imagen -->
+              <div class="col-md-6 col-sm-12 text-center">
+                {% if actividad.imagen %}
+                <img src="{{ actividad.imagen.url }}" alt="Imagen de la actividad" class="img-fluid rounded shadow" style="width: 100%; height: 300px;">
+                {% else %}
+                <div class="placeholder-image bg-light border rounded d-flex justify-content-center align-items-center"
+                  style="width: 100%; height: 300px;">
+                  <span class="text-muted">Sin imagen disponible</span>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-pane fade" id="navs-pills-top-messages" role="tabpanel">
+          <div class="row mb-5">
+            {% for colaborador in actividad.colaborador.all %}
+            <div class="col-md-4">
+              <!-- Ajusta el número de columnas según necesites -->
+              <div class="card mb-3">
+                <div class="row g-0">
+                  <div class="col-md-4">
+                    <img class="card-img"
+                      src="{% if colaborador.perfilusuario.img_usuario %}{{ colaborador.perfilusuario.img_usuario.url }}{% else %}{% static '/img/perfil.png' %}{% endif %}"
+                      alt="Imagen de {{ colaborador.username }}" />
+                  </div>
+                  <div class="col-md-8">
+                    <div class="card-body">
+                      <h5 class="card-title">{{ colaborador.first_name }} {{ colaborador.last_name }}</h5>
+                      <!-- Nombre y apellido -->
+                      <p class="card-text" ><strong></strong> {{ colaborador.group }}</p> <!-- Grupo -->
+                      <p class="card-text text-truncate" style="max-width: 200px;" data-bs-toggle="tooltip" data-bs-placement="top"
+                      title="{{ colaborador.email }}"><strong></strong> {{ colaborador.email }}</p> <!-- Correo -->
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% empty %}
+            <div class="col-md-12">
+              <div class="alert alert-warning" role="alert">
+                No hay participantes registrados.
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock contenido %}
+
+{% block js %}
+<script>
+  $(document).ready(function () {
+    let urlAgregarInforme = "{% url 'agregar_informe' 0 %}";
+
+    // Evento para abrir el modal y configurar el formulario
+    $('#agregarInformeModal').on('show.bs.modal', function (event) {
+      let button = $(event.relatedTarget); // Botón que activó el modal
+      let actividadId = button.data('actividad-id'); // Obtener el ID de la actividad
+      let finalUrl = urlAgregarInforme.replace('0', actividadId); // Construir URL final
+
+      // Actualizar acción del formulario
+      $('#formularioAgregarInforme').off('submit').on('submit', function (e) {
+        e.preventDefault();
+        let formData = new FormData(this);
+
+        // Enviar el formulario usando AJAX
+        $.ajax({
+          url: finalUrl,
+          type: "POST",
+          data: formData,
+          processData: false,
+          contentType: false,
+          success: function (response) {
+            $("#agregarInformeModal").modal('hide'); // Cerrar modal
+            location.reload(); // Recargar la página o actualizar la tabla
+          },
+          error: function (response) {
+            alert("Hubo un problema al guardar el informe. Intenta de nuevo.");
+          },
+        });
+      });
+
+      // Asegurarse de que los atributos 'min' y 'max' estén actualizados en el frontend
+      $.ajax({
+        url: finalUrl,
+        type: 'GET',
+        success: function (response) {
+          console.log("Fechas recibidas del servidor:", response);
+          // Obtener las fechas mínimas y máximas de la actividad
+          let minFecha = response.min_fecha_inicio;
+          let maxFecha = response.max_fecha_fin;
+
+          // Imprimir las fechas en consola para depuración
+          console.log("Configurando minFecha:", minFecha);
+          console.log("Configurando maxFecha:", maxFecha);
+
+          // Asignar esos valores a los inputs de fecha
+          $('#id_fecha_inicio').attr('min', minFecha).attr('max', maxFecha);
+          $('#id_fecha_fin').attr('min', minFecha).attr('max', maxFecha);
+
+          // Verificar si los atributos 'min' y 'max' se han asignado correctamente
+          console.log("Atributos fecha_inicio:", $('#id_fecha_inicio').attr('min'), $('#id_fecha_inicio').attr('max'));
+          console.log("Atributos fecha_fin:", $('#id_fecha_fin').attr('min'), $('#id_fecha_fin').attr('max'));
+        },
+      });
+    });
+  });
+</script>
+
+<script>
+  function setDeleteFormAction(action) {
+    const form = document.getElementById('delete-form');
+    form.action = action;
+  }
+</script>
+
+<script>
+  $(document).ready(function() {
+      let urleditarInforme = "{% url 'editar_informe_modal' 0 %}";
+  
+      $('#editarInformeModal').on('show.bs.modal', function(event) {
+        const button = $(event.relatedTarget);
+        const id = button.data('id');
+        const modal = $(this);
+    
+        // Establece la URL de forma dinámica
+        const finalUrl = urleditarInforme.replace('0', id);
+        modal.data('final-url', finalUrl);
+    
+        // Solicitud GET para obtener los datos del informe
+        $.get(finalUrl, function(data) {
+            modal.find('#informe-id').val(id);
+            modal.find('input[name="titulo"]').val(data.titulo);
+            modal.find('input[name="fecha_inicio"]').val(data.fecha_inicio_informe);
+            modal.find('input[name="fecha_fin"]').val(data.fecha_fin_informe);
+    
+            // Configurar límites del rango
+            modal.find('input[name="fecha_inicio"]').attr('min', data.fecha_inicio_actividad);
+            modal.find('input[name="fecha_inicio"]').attr('max', data.fecha_fin_actividad);
+            modal.find('input[name="fecha_fin"]').attr('min', data.fecha_inicio_actividad);
+            modal.find('input[name="fecha_fin"]').attr('max', data.fecha_fin_actividad);
+    
+            modal.find('input[name="fecha_inicio"]').on('change', function() {
+                const nuevaFechaInicio = $(this).val();
+                modal.find('input[name="fecha_fin"]').attr('min', nuevaFechaInicio);
+            });
+        }).fail(function() {
+            alert("Error al cargar los datos del informe. Intenta de nuevo.");
+        });
+    });
+    // Envío del formulario
+    $("#formularioEditarInforme").submit(function(event) {
+        event.preventDefault();
+        const finalUrl = $('#editarInformeModal').data('final-url');
+        const formData = new FormData(this);
+        $.ajax({
+          url: finalUrl,
+          type: "POST",
+          data: formData,
+          processData: false,
+          contentType: false,
+          success: function(response) {
+            $("#editarTipoModal").modal('hide');
+            location.reload();
+          },
+          error: function(response) {
+              console.error("Error en la solicitud AJAX:", response.responseText);
+              alert("Hubo un problema al guardar los cambios. Intenta de nuevo.");
+          }
+      });
+      
+    });
+  });
+</script>
+
+
+<!-- Incluye jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Obtener los elementos de fecha de inicio y fecha de fin en el formulario de informe
+    var fechaInicioInforme = document.getElementById('id_fecha_inicio');
+    var fechaFinInforme = document.getElementById('id_fecha_fin');
+
+    // Función para actualizar el mínimo de fecha_fin en función de la fecha seleccionada en fecha_inicio
+    fechaInicioInforme.addEventListener('change', function () {
+        var fechaSeleccionada = fechaInicioInforme.value;
+        fechaFinInforme.setAttribute('min', fechaSeleccionada);  // Ajusta la fecha mínima en fecha_fin
+    });
+
+    // Establecer la fecha mínima inicial de fecha_fin si ya hay una fecha de inicio preseleccionada
+    if (fechaInicioInforme.value) {
+        fechaFinInforme.setAttribute('min', fechaInicioInforme.value);
+    }
+});
+
+</script>
+{% endblock js %}

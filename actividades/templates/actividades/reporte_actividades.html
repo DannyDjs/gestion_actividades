@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Actividad {{ actividad.id }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        /* Márgenes normales de la página PDF (2.5 cm por cada lado) */
+        @page {
+            margin: 2.5cm;
+        }
+
+        .container {
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .logo {
+            width: 120px;
+            height: auto;
+        }
+
+        .title {
+            font-size: 24px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        /* Estilos de las secciones */
+        .section {
+            margin-top: 20px;
+            page-break-inside: avoid; /* Evita que una sección se divida entre dos páginas */
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .section-content {
+            font-size: 14px;
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+        }
+
+        /* Espaciado entre fechas */
+        .fecha {
+            margin-bottom: 10px; /* Le damos espacio a cada fecha */
+        }
+
+        /* Estilo del mensaje "No hay informes" */
+        .no-informes {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 10px;
+            margin-top: 20px;
+            font-size: 16px;
+            text-align: center;
+            border-radius: 5px;
+        }
+
+        .evidences {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .image-container {
+            display: flex;              /* Activamos el modo Flexbox */
+            flex-wrap: wrap;            /* Las imágenes se moverán a la siguiente fila cuando no haya espacio */
+            gap: 15px;                  /* Espacio entre las imágenes */
+            justify-content: flex-start;/* Alineación de las imágenes a la izquierda */
+        }
+        
+        /* Estilos para cada imagen */
+        .evidence-item {
+            flex: 1 1 calc(50% - 15px); /* Esto hace que cada imagen ocupe el 50% del ancho de la fila, menos el espacio entre ellas */
+            box-sizing: border-box;     /* Asegura que los márgenes y rellenos no afecten el tamaño de los elementos */
+        }
+
+        .image {
+            width: 100%;
+            height: auto;
+        }
+
+        .signature {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+            page-break-inside: avoid;
+        }
+
+        .signature-item {
+            text-align: left;
+        }
+
+        .signature-item img {
+            width: 100px;
+            height: auto;
+        }
+
+        .signature-item p {
+            margin-bottom: 5px;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid #000;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="section">
+            <h2 class="section-title">Actividades</h2>
+            {% if actividades %}
+                {% for actividad in actividades %}
+                    <div class="section-content">
+                        <p><strong>Actividad:</strong> {{ actividad.titulo }}</p>
+                        <div class="fecha">
+                            <p><strong>Fecha Inicio:</strong> {{ actividad.fecha_inicio }} &nbsp;&nbsp;&nbsp;&nbsp; <strong>Fecha Fin:</strong> {{ actividad.fecha_fin }}</p>
+                        </div>
+    
+                        <!-- Informes -->
+                        <h3>Informes</h3>
+                        {% if actividad.informes.all %}
+                            {% for informe in actividad.informes.all %}
+                                <div class="section-content">
+                                    <p><strong>Informe:</strong> {{ informe.titulo }}</p>
+                                    <p><strong>Fecha Inicio:</strong> {{ informe.fecha_inicio }} &nbsp;&nbsp;&nbsp;&nbsp;<strong>Fecha Fin:</strong> {{ informe.fecha_fin }}</p>
+                                    <p><strong>Descripción:</strong> {{ informe.contenido|striptags|linebreaksbr }}</p>
+    
+                                    <!-- Evidencias -->
+                                    <h4>Evidencias</h4>
+                                    <!-- Documentos y Enlaces -->
+                                    {% if informe.evidencias.all %}
+                                        <div class="image-container">
+                                            {% for evidencia in informe.evidencias.all %}
+                                                {% if evidencia.imagen %}
+                                                    <!-- Elemento de imagen -->
+                                                    <div class="evidence-item">
+                                                        <img src="http://127.0.0.1:8000{{ evidencia.imagen.url }}" alt="Evidencia" class="image" width="600" height="300">
+                                                    </div>
+                                                {% endif %}
+                                                {% if evidencia.archivo %}
+                                                    <li><a href="{{ evidencia.archivo.url }}" target="_blank">Descargar: {{ evidencia.archivo.url }}</a></li>
+                                                {% endif %}
+                                                {% if evidencia.enlace %}
+                                                    <li><a href="{{ evidencia.enlace }}" target="_blank">Enlace: {{ evidencia.enlace }}</a></li>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <p>No hay evidencias disponibles.</p>
+                                    {% endif %}
+
+
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="no-informes">
+                                <strong>No hay informes disponibles aun para esta actividad.</strong>
+                            </div>
+                        {% endif %}
+    
+                        <!-- Firmas de los colaboradores -->
+                        <h4>Firmas </h4>
+                        <div class="signature">
+                            {% for colaborador in actividad.colaborador.all %}
+                                <div class="signature-item">
+                                    {% if colaborador.perfilusuario.img_firma %}
+                                        <img src="http://127.0.0.1:8000{{ colaborador.perfilusuario.img_firma.url }}" alt="Firma" width="150" height="50">
+                                    {% else %}
+                                        <p>Sin firma</p>
+                                    {% endif %}
+                                    <p><strong>{{ colaborador.first_name }} {{ colaborador.last_name }}</strong></p>
+                                </div>
+                            {% endfor %}
+                        </div>
+    
+                        <hr>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No se encontraron actividades con los filtros aplicados.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

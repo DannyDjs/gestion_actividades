@@ -1,0 +1,325 @@
+{% extends "base_actividades.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block titulo %}Listar Tipos de Actividad{% endblock titulo %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+{% endblock css %}
+
+{% block buscar %}
+<!-- Buscar -->
+    {% if can_view_tipoactividad %}
+    <div class="navbar-nav align-items-center">
+        <div class="nav-item d-flex align-items-center">
+            <i class="bx bx-search fs-4 lh-0"></i>
+            <input id="search-bar" type="text" class="form-control border-0 shadow-none" placeholder="Buscar tipo de actividad..." aria-label="Buscar..." />
+        </div>
+    </div>
+    {% endif %}
+<!-- /Buscar -->
+{% endblock buscar %}
+{% block contenido %}
+        <!-- Contenedor para las tres columnas -->
+        <div class="row justify-content-center">
+            <!-- Columna central -->
+            <div class="col-12 col-md-8 col-lg-6">
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Listar Tipos de Actividad</h5>
+                        <small class="text-muted float-end">Descripción del listado</small>
+                    </div>
+                   
+                    <div class="card-body">
+                        <div class="table-responsive-md">
+                            <!-- Tabla de Tipos de Actividad -->
+                        <table class="table table-hover ">
+                            <thead>
+                                <tr>
+                                    <th>N°</th>
+                                    <th>Nombre del tipo de actividad</th>
+                                    <th>Opciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tipo-actividad-list">
+                                {% for tipo in tipos %}
+                                <tr>
+                                    <td class="col-1">{{ forloop.counter }}</td>
+                                    <td class="text-truncate" 
+                                    style="max-width: 200px;" 
+                                    data-bs-toggle="tooltip" 
+                                    data-bs-placement="top" 
+                                    title="{{ tipo.nombre }}">{{ tipo.nombre }}</td>
+
+                                    <td class="acciones text-center col-1">
+
+                                        <div class="dropdown">
+                                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow"
+                                                data-bs-toggle="dropdown">
+                                                <i class="bx bx-dots-vertical-rounded"></i>
+                                            </button>
+
+                                            <div class="dropdown-menu">
+                                                
+                                                
+                                                <a class="dropdown-item editar-tipo-btn {% if not can_change_tipoactividad %}disabled{% endif %}" 
+                                                    data-id="{{ tipo.id }}"
+                                                    data-nombre="{{ tipo.nombre }}"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#editarTipoModal">
+                                                    <i class="bx bx-edit me-2"></i> Editar
+                                                </a>
+                                                
+
+                                                {% if can_delete_tipoactividad %}
+                                                <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                    data-bs-target="#confirmDeleteModal"
+                                                    onclick="setDeleteFormAction('{% url 'eliminar_tipo' tipo.id %}')">
+                                                    <i class="bx bx-trash me-2"></i> Eliminar
+                                                </a>
+                                                {% endif %}
+                                                
+
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No hay tipos de actividad registrados.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Controles de Paginación -->
+                    <div class="demo-inline-spacing">
+                        <nav aria-label="Paginación">
+                          <ul class="pagination">
+                              {% if page_obj.has_previous %}
+                              <li class="page-item">
+                                  <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Anterior">
+                                      <span aria-hidden="true">&laquo;</span>
+                                  </a>
+                              </li>
+                              {% endif %}
+                              <li class="page-item disabled">
+                                  <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                              </li>
+                              {% if page_obj.has_next %}
+                              <li class="page-item">
+                                  <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Siguiente">
+                                      <span aria-hidden="true">&raquo;</span>
+                                  </a>
+                              </li>
+                              {% endif %}
+                          </ul>
+                      </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<!-- Botón flotante para agregar tipos de actividad -->
+{% if can_add_tipoactividad %}
+<button class="btn-flotante" data-bs-toggle="modal" data-bs-target="#agregarTipoModal">+</button>
+{% endif %}
+
+
+<!-- Modal agregar tipo de actividad -->
+<div class="modal fade" id="agregarTipoModal" tabindex="-1" aria-labelledby="agregarTipoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="agregarTipoModalLabel">AGREGAR TIPO DE ACTIVIDAD</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="card-body">
+                <form method="post" id="formularioAgregarTipo" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group mb-3">
+                        <label for="nombre">Nombre</label>
+                        <input type="text" class="form-control" name="nombre" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="submit" class="btn btn-primary">Guardar Tipo de Actividad</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal eliminar tipo de actividad -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que deseas eliminar este tipo de actividad?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="delete-form" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal editar tipo de actividad -->
+<div class="modal fade" id="editarTipoModal" tabindex="-1" aria-labelledby="editarTipoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarTipoModalLabel">EDITAR TIPO DE ACTIVIDAD</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="formularioEditarTipo" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" id="tipo-id" name="tipo_id" value="">
+                    <div class="form-group mb-3">
+                        <label for="nombre">Nombre</label>
+                        <input type="text" class="form-control" name="nombre" id="nombre" required>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock contenido %}
+{% block js %}
+<script>
+    $(document).ready(function() {
+        $('#tipo-actividad-list').on('click', '.editar-tipo-btn', function() {
+            var id = $(this).data('id');
+            var nombre = $(this).data('nombre');
+            $('#tipo-id').val(id);
+            $('#nombre').val(nombre);
+        });
+        // Configurar el formulario de agregar tipo
+        $('#formularioAgregarTipo').submit(function(event) {
+            event.preventDefault();
+            let formData = new FormData(this);
+            $.ajax({
+                url: "{% url 'agregar_tipo' %}",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $("#agregarTipoModal").modal('hide');
+                    location.reload();
+                },
+                error: function(response) {
+                    alert("Hubo un error al agregar el tipo de actividad.");
+                }
+            });
+        });
+        // Configurar el formulario de editar tipo
+        $('#formularioEditarTipo').submit(function(event) {
+            event.preventDefault();
+            let formData = new FormData(this);
+            $.ajax({
+                url: "{% url 'editar_tipo' %}",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $("#editarTipoModal").modal('hide');
+                    location.reload();
+                },
+                error: function(response) {
+                    alert("Hubo un error al editar el tipo de actividad.");
+                }
+            });
+        });
+    });
+</script>
+<script>
+    function setDeleteFormAction(action) {
+        const form = document.getElementById('delete-form');
+        form.action = action;
+    }
+</script>
+
+<script>
+    document.getElementById('search-bar').addEventListener('input', function() {
+        const query = this.value;
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const url = `{% url 'listar_tipos' %}?q=` + encodeURIComponent(query);
+    
+        fetch(url, { 
+            headers: { 
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            }   
+        })
+        
+        .then(response => response.json())
+
+        .then(data => {
+            const tbody = document.getElementById('tipo-actividad-list');
+            tbody.innerHTML = ''; // Limpiar contenido previo
+    
+            if (data.tipos.length > 0) {
+                data.tipos.forEach((tipo, index) => {
+                    const deleteUrl = "{% url 'eliminar_tipo' '0' %}".replace('0', tipo.id);
+                    const row = `
+                        <tr>
+                            <td class="col-1">${index + 1}</td>
+                            <td class="text-truncate" 
+                            style="max-width: 200px;" 
+                            data-bs-toggle="tooltip" 
+                            data-bs-placement="top" 
+                            title="${tipo.nombre}">${tipo.nombre}</td>
+                            <td class="acciones text-center col-1">
+                                <div class="dropdown">
+                                    <button type="button" class="btn p-0 dropdown-toggle hide-arrow"
+                                        data-bs-toggle="dropdown">
+                                        <i class="bx bx-dots-vertical-rounded"></i>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item editar-tipo-btn {% if not can_change_tipoactividad %}disabled{% endif %}" 
+                                            data-id="${tipo.id}"
+                                            data-nombre="${ tipo.nombre }"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editarTipoModal">
+                                            <i class="bx bx-edit me-2"></i> Editar
+                                        </a>
+                                        {% if can_delete_tipoactividad %}
+                                        <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                            data-bs-target="#confirmDeleteModal"
+                                            onclick="setDeleteFormAction('${deleteUrl}')">
+                                            <i class="bx bx-trash me-2"></i> Eliminar
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>`;
+                    tbody.innerHTML += row;
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="3" class="text-center">No se encontraron resultados.</td></tr>`;
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+</script>
+{% endblock js %}

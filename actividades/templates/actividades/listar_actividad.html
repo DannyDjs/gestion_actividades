@@ -1,0 +1,562 @@
+{% extends "base_actividades.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block titulo %}Listar Informes{% endblock titulo %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+{% endblock css %}
+
+{% block buscar %}
+    <!-- Buscar -->
+ {% if can_view_actividad %}
+ <div class="navbar-nav align-items-center">
+    <div class="nav-item d-flex align-items-center">
+        <i class="bx bx-search fs-4 lh-0"></i>
+        <input id="search-bar" type="text" class="form-control border-0 shadow-none" placeholder="Buscar Actividad..."
+            aria-label="Buscar actividad" />
+    </div>
+</div>
+ {% endif %}
+  <!-- /Buscar -->
+{% endblock buscar %}
+{% block contenido %}
+<div class="col-xl">
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Listar Actividades</h5>
+            <div>
+                <!-- Filtros -->
+             <form method="get" class="mb-4">
+                <div class="row">
+                    <div class="col-12 col-sm-6 col-md-3 mb-3">
+                        <select name="mes" class="form-control" id="mes">
+                            <option value="">Meses</option>
+                            <option value="1">Enero</option>
+                            <option value="2">Febrero</option>
+                            <option value="3">Marzo</option>
+                            <option value="4">Abril</option>
+                            <option value="5">Mayo</option>
+                            <option value="6">Junio</option>
+                            <option value="7">Julio</option>
+                            <option value="8">Agosto</option>
+                            <option value="9">Septiembre</option>
+                            <option value="10">Octubre</option>
+                            <option value="11">Noviembre</option>
+                            <option value="12">Diciembre</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-3 mb-3">
+                        <select name="dia" class="form-control" id="dia">
+                            <option value="">Días</option>
+                            {% for dia in dias %}
+                            <option value="{{ dia }}">{{ dia }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-3 mb-3">
+                        <!-- <select name="estado" class="form-control" id="estado" onchange="filtrarPorEstado()"> -->
+                        <select name="estado" class="form-control" id="estado">
+                            <option value="">Estado</option>
+                            <option value="pendiente">Pendiente</option>
+                            <option value="en proceso">Proceso</option>
+                            <option value="finalizada">Finalizada</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-3 d-flex align-items-end mb-3">
+                        <button type="submit" class="btn btn-primary ">Filtrar</button>
+                    </div>
+                </div>
+            </form>
+            </div>
+        </div>
+        <div class="card-body">
+           
+
+            <div class="table-responsive-md table-responsive-sm table-responsive-lg table-responsive-xl table-responsive-xxl">
+                <!-- Tabla de Actividades -->
+                <table class="table table-hover table-sm">
+                    <thead>
+                        <tr>
+                            <th>N°</th>
+                            <th>Título</th>
+                            <th>Descripcion</th>
+                            <th>Lugar</th>
+                            <th>Fecha</th>
+                            <th>Colaboradores</th>
+                            <th>Estado</th>
+                            <th>Opciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="actividad-list">
+                        {% for actividad in actividades %}
+                        <tr onclick="window.location.href='{% if can_view_informe %}{% url 'listar_informe' actividad.id %}{% endif %}'"
+                            style="cursor:pointer;">
+                            <td class="col-1">{{ forloop.counter }}</td>
+                            <td class="text-truncate" style="max-width: 200px;" data-bs-toggle="tooltip"
+                                data-bs-placement="top" title="{{ actividad.titulo }}">{{ actividad.titulo }}
+                            </td>
+                            <td class="text-truncate" style="max-width: 200px;" data-bs-toggle="tooltip"
+                                data-bs-placement="top" title="{{ actividad.descripcion }}">
+                                {{ actividad.descripcion }}</td>
+                            <td class="text-truncate" style="max-width: 200px;" data-bs-toggle="tooltip"
+                                data-bs-placement="top" title="{{ actividad.lugar }}">{{ actividad.lugar }}</td>
+                            <td class="col-2">{{ actividad.fecha_inicio|date:"d/m/Y" }} a
+                                {{ actividad.fecha_fin|date:"d/m/Y" }}</td>
+                            <td class="col-2">
+                                <ul class="list-unstyled users-list m-0 avatar-group d-flex align-items-center">
+                                    {% for colaborador in actividad.colaborador.all %}
+                                    <li data-bs-toggle="tooltip" data-popup="tooltip-custom" data-bs-placement="top"
+                                        class="avatar avatar-xs pull-up"
+                                        title="{{ colaborador.first_name }} {{ colaborador.last_name}}">
+                                        <img src="
+                                                    {% if colaborador.perfilusuario.img_usuario %}
+                                                        {{ colaborador.perfilusuario.img_usuario.url }}
+                                                    {% else %}
+                                                        {% static 'img/perfil.png' %}
+                                                    {% endif %}"
+                                            alt="{{ colaborador.first_name }} {{ colaborador.last_name}}"
+                                            class="rounded-circle" />
+
+                                    </li>
+                                    {% if not forloop.last %} <span class="ms-1">,</span> {% endif %}
+                                    {% empty %}
+                                    <span>No hay colaboradores asignados</span>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+
+                            <td class="col-1">
+                                {% if actividad.estado == "Pendiente" %}
+                                <span class="badge bg-warning text-dark">Pendiente</span> <!-- Color naranja -->
+                                {% elif actividad.estado == "Finalizada" %}
+                                <span class="badge bg-success">Finalizada</span> <!-- Color verde -->
+                                {% else %}
+                                <span class="badge bg-secondary">{{ actividad.estado }}</span>
+                                <!-- Color gris -->
+                                {% endif %}
+                            </td>
+                            <td class="acciones center col-1" onclick="event.stopPropagation();">
+
+                                <div class="dropdown">
+                                    <button type="button" class="btn p-0 dropdown-toggle hide-arrow"
+                                        data-bs-toggle="dropdown">
+                                        <i class="bx bx-dots-vertical-rounded"></i>
+                                    </button>
+
+                                    <div class="dropdown-menu">
+
+                                        {% if can_change_actividad %}
+                                        <a class="dropdown-item editar-actividad-btn" data-id="{{ actividad.id }}"
+                                            data-titulo="{{ actividad.titulo }}"
+                                            data-descripcion="{{ actividad.descripcion }}"
+                                            data-lugar="{{ actividad.lugar }}"
+                                            data-fecha-inicio="{{ actividad.fecha_inicio|date:'Y-m-d' }}"
+                                            data-fecha-fin="{{ actividad.fecha_fin|date:'Y-m-d' }}"
+                                            data-imagen="{{ actividad.imagen}}" 
+                                            data-tipo="{{actividad.tipo.id }}"
+                                            data-colaborador="{{ actividad.colaboradores_ids}}" data-bs-toggle="modal"
+                                            data-bs-target="#editarActividadModal">
+                                            <i class="bx bx-edit me-2"></i> Editar
+                                        </a>
+                                        {% endif %}
+
+                                        {% if can_delete_actividad %}
+                                        
+                                        <a class="dropdown-item {% if not actividad.es_creador %}disabled{% endif %}" href="#" data-bs-toggle="modal"
+                                            data-bs-target="#confirmDeleteModal"
+                                            onclick="setDeleteFormAction('{% url 'eliminar_actividad' actividad.id %}')">
+                                            <i class="bx bx-trash me-2"></i> Eliminar
+                                        </a>
+                                        
+                                        {% endif %}
+                                    </div>
+
+                                </div>
+                            </td>
+                        </tr>
+
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center">No hay actividades registradas.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <!-- Tabla de Actividades -->
+            </div>
+            <div class="demo-inline-spacing">
+                <nav aria-label="Paginación">
+                    <ul class="pagination">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Anterior">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Página {{ page_obj.number }} de
+                                {{ page_obj.paginator.num_pages }}</span>
+                        </li>
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Siguiente">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Botón flotante para agregar actividades -->
+{% if can_add_actividad %}
+<button class="btn-flotante" data-bs-toggle="modal" data-bs-target="#agregarActividadModal">+</button>
+{% endif %}
+<!-- Modal agregar actividad -->
+<div class="modal fade" id="agregarActividadModal" tabindex="-1" aria-labelledby="miModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="miModalLabel">AGREGAR ACTIVIDAD</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="card-body">
+                <form method="post" id="formularioAgregarActividad" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% for field in form_actividad %}
+                    <div class="form-group mb-3">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field|add_class:"form-control" }}
+                        {% if field.help_text %}
+                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="submit" class="btn btn-primary">Guardar Actividad</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal eliminar actividad -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que deseas eliminar esta actividad?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="delete-form" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal editar actividad -->
+<div class="modal fade" id="editarActividadModal" tabindex="-1" aria-labelledby="editarActividadModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarActividadModalLabel">EDITAR ACTIVIDAD</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <form method="post" id="formularioEditarActividad" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <input type="hidden" id="actividad-id" name="actividad_id" value="">
+
+                    {% for field in form_actividad %}
+                    <div class="form-group mb-3">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field|add_class:"form-control" }}
+                        {% if field.help_text %}
+                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock contenido %}
+{% block js %}
+<!-- Incluye jQuery antes de Select2 -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Obtener los elementos de fecha de inicio y fecha de fin
+        var fechaInicio = document.getElementById('id_fecha_inicio');
+        var fechaFin = document.getElementById('id_fecha_fin');
+
+        // Función para actualizar la fecha mínima de fecha_fin
+        fechaInicio.addEventListener('change', function () {
+            var fechaSeleccionada = fechaInicio.value;
+            fechaFin.setAttribute('min', fechaSeleccionada);  
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        $('#agregarActividadModal').on('shown.bs.modal', function() {
+          $('#colaborador-select').select2({
+            dropdownParent: $('#formularioAgregarActividad'),
+            placeholder: "Selecciona colaboradores",
+            allowClear: true
+          });
+      
+          // Evitar duplicar eventos al volver a abrir el modal
+          $("#formularioAgregarActividad").off("submit").on("submit", function(event) {
+            event.preventDefault();
+            let formData = new FormData(this);
+            $.ajax({
+              url: "{% url 'agregar_actividad' %}",
+              type: "POST",
+              data: formData,
+              processData: false,
+              contentType: false,
+              success: function(response) {
+                $("#agregarActividadModal").modal('hide');
+                location.reload();
+              },
+              error: function(response) {
+                alert("Hubo un problema al guardar la actividad. Intenta de nuevo.");
+              }
+            });
+          });
+        });
+      });      
+</script>
+<script>
+    function setDeleteFormAction(action) {
+        const form = document.getElementById('delete-form');
+        form.action = action;
+    }
+</script>
+
+<script>
+    $(document).ready(function() {
+        
+        // Inicializar select2 una vez que el modal se esté mostrando
+        $('#editarActividadModal').on('show.bs.modal', function(event) {
+            const button = $(event.relatedTarget); // Botón que activó el modal
+            const tipo = button.data('tipo');
+            const id = button.data('id');
+            const titulo = button.data('titulo');
+            const descripcion = button.data('descripcion');
+            const lugar = button.data('lugar');
+            const fechaInicio = button.data('fecha-inicio');
+            const fechaFin = button.data('fecha-fin');
+            const imagen = button.data('imagen');
+            const colaborador = button.data('colaborador');
+
+            const modal = $(this);
+            console.log('Datos recibidos:', colaborador);
+
+            //const colaboradorArray = Array.isArray(colaborador) ? colaborador : colaborador ? colaborador.split(',').map(item => item.trim()) : [];
+            //const colaboradorArray = Array.isArray(colaborador) ? colaborador : colaborador ? [colaborador] : [];
+            //const colaboradorArray = Array.isArray(colaborador) ? colaborador : colaborador  ? colaborador.includes(',') ? [colaborador] : colaborador.split(',').map(item => item.trim()) : [];
+            const colaboradorArray = Array.isArray(colaborador) 
+                ? colaborador // Si es un array, lo devolvemos tal cual.
+                : colaborador 
+                  ? colaborador.trim().includes(',') 
+                    ? colaborador.split(',').map(item => item.trim()) // Si tiene coma, separamos por comas y eliminamos espacios extra.
+                    : [colaborador.trim()] // Si solo es un colaborador, lo convertimos en un array de 1 elemento.
+                  : []; // Si colaborador está vacío o es null/undefined, devolvemos un array vacío.
+
+            modal.find('#colaborador-select').val(colaboradorArray).trigger('change');
+            modal.find('select[name="tipo"]').val(tipo);
+            modal.find('#actividad-id').val(id);
+            modal.find('input[name="titulo"]').val(titulo);
+            modal.find('textarea[name="descripcion"]').val(descripcion);
+            modal.find('input[name="lugar"]').val(lugar);
+            modal.find('input[name="fecha_inicio"]').val(fechaInicio);
+            modal.find('input[name="fecha_fin"]').val(fechaFin);
+            // Actualizar la fecha mínima en el campo fecha_fin
+            modal.find('input[name="fecha_fin"]').attr('min', fechaInicio);
+            modal.find('input[name="fecha_inicio"]').on('change', function() {
+                const nuevaFechaInicio = $(this).val(); // Obtener la nueva fecha de inicio
+                modal.find('input[name="fecha_fin"]').attr('min', nuevaFechaInicio); // Actualizar el valor mínimo de fecha_fin
+            });
+
+            modal.find('#colaborador-select').select2({
+                dropdownParent: $('#formularioEditarActividad'), // Asegura que el dropdown esté dentro del modal
+                placeholder: "Selecciona colaboradores",
+                allowClear: true,
+                width: '100%' // Opcional, pero ajusta el ancho del select
+            });
+            // Escuchar cambios en el campo de fecha_inicio para actualizar el valor mínimo de fecha_fin
+            
+        });
+        
+    
+        $("#formularioEditarActividad").submit(function(event) {
+            event.preventDefault(); // Evita el comportamiento normal del formulario
+            let formData = new FormData(this); // Serializa los datos del formulario
+            $.ajax({
+                url: "{% url 'editar_actividad' %}", // La URL para enviar los datos
+                type: "POST",
+                data: formData,
+                processData: false, // Evitar que jQuery procese los datos
+                contentType: false, // Evitar que jQuery establezca el contentType
+                success: function(response) {
+                    // Si se guarda exitosamente, puedes hacer algo como cerrar el modal
+                    $("#editarActividadModal").modal('hide');
+                    // Aquí puedes actualizar la lista de actividades o notificar al usuario
+                    location.reload();
+                },
+                error: function(response) {
+                    // Si hay algún error, puedes mostrar un mensaje de error
+                    alert("Hubo un problema al guardar los cambios. Intenta de nuevo.");
+                }
+            });
+        });
+        
+    });
+    
+</script>
+<script>
+    document.getElementById('search-bar').addEventListener('input', function () {
+        const query = this.value.trim();  // Texto ingresado en el campo de búsqueda
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;  // Token CSRF
+        const url = `{% url 'listar_actividad' %}?q=${encodeURIComponent(query)}`;  // URL con el parámetro de búsqueda
+    
+        fetch(url, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',  // Identificar la solicitud como AJAX
+                'X-CSRFToken': csrfToken,
+                'Cache-Control': 'no-cache',  // Prevenir la caché
+                'Pragma': 'no-cache'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Datos recibidos:', data);
+            const tbody = document.getElementById('actividad-list');  // Contenedor de la tabla
+            tbody.innerHTML = '';
+    
+            if (data.actividades.length > 0) {
+                data.actividades.forEach((actividad, index) => {
+                    const deleteUrl = "{% url 'eliminar_actividad' '0' %}".replace('0', actividad.id);
+                    const informeUrl = "{% url 'editar_informe' '0' %}".replace('0', actividad.id);
+                    const imgPerfil = "{% static '${actividad.colaborador.perfilusuario.img_usuario}' %}";
+                    const row = `
+                        <tr onclick="window.location.href='${informeUrl}'" style="cursor:pointer;">
+                            <td class="col-1">${index + 1}</td>
+                            <td class="text-truncate" style="max-width: 200px;" data-bs-toggle="tooltip" title="${actividad.titulo}">
+                                ${actividad.titulo}
+                            </td>
+                            <td class="text-truncate" style="max-width: 200px;" data-bs-toggle="tooltip" title="${actividad.descripcion}">
+                                ${actividad.descripcion}
+                            </td>
+                            <td class="text-truncate" style="max-width: 200px;" data-bs-toggle="tooltip" title="${actividad.lugar}">
+                                ${actividad.lugar}
+                            </td>
+                            <td class="col-2">${actividad.fecha_inicio} a ${actividad.fecha_fin}</td>
+                            <td class="col-2">
+                                <ul class="list-unstyled users-list m-0 avatar-group d-flex align-items-center">
+                                    ${actividad.colaborador.map(col => `
+                                        <li data-bs-toggle="tooltip" data-popup="tooltip-custom" data-bs-placement="top"
+                                            class="avatar avatar-xs pull-up" title="${col.nombre}">
+                                            <img src="${col.img || '{% static "/img/perfil.png" %}'}" alt="${col.nombre}" class="rounded-circle" />
+                                        </li>
+                                    `).join('') || '<span>No hay colaboradores asignados</span>'}
+                                </ul>
+                            </td>
+                            <td class="col-1">
+                                ${actividad.estado === "Pendiente" ? 
+                                    `<span class="badge bg-warning text-dark">Pendiente</span>` :
+                                    actividad.estado === "Finalizada" ? 
+                                    `<span class="badge bg-success">Finalizada</span>` : 
+                                    `<span class="badge bg-secondary">${actividad.estado}</span>`}
+                            </td>
+                            <td class="acciones center col-1" onclick="event.stopPropagation();">
+                                <div class="dropdown">
+                                    <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                        <i class="bx bx-dots-vertical-rounded"></i>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        {% if can_change_actividad %}
+                                        <a class="dropdown-item editar-actividad-btn" 
+                                        data-id="${actividad.id}" 
+                                        data-titulo="${actividad.titulo}" 
+                                        data-descripcion="${actividad.descripcion}" 
+                                        data-lugar="${actividad.lugar}" 
+                                        data-fecha-inicio="${actividad.fecha_inicio}" 
+                                        data-fecha-fin="${actividad.fecha_fin}"
+                                        data-tipo="${actividad.tipo}"
+                                        data-colaborador="${JSON.stringify(actividad.colaboradores_ids)}"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#editarActividadModal" >
+                                        <i class="bx bx-edit me-2"></i> Editar
+                                        </a>
+                                        {% endif %}
+                                        {% if can_delete_actividad %}
+                                        {% if actividad.es_creador %}
+                                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal"
+                                            onclick="setDeleteFormAction('${deleteUrl}')">
+                                            <i class="bx bx-trash me-2"></i> Eliminar
+                                        </a>
+                                        {% endif %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>`;
+                    tbody.innerHTML += row;  // Agregar cada fila a la tabla
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center">No se encontraron resultados.</td></tr>`;
+            }
+        })
+        .catch(error => console.error('Error:', error));  // Manejar errores
+    });
+</script>
+
+<script>
+    // Redirigir a la misma página con el estado seleccionado como parámetro GET
+    function filtrarPorEstado() {
+        const estado = document.getElementById('estado').value;
+        const url = new URL(window.location.href);
+        url.searchParams.set('estado', estado);
+        window.location.href = url.toString();
+    }
+</script>
+
+{% endblock js %}

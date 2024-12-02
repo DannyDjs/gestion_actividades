@@ -1,0 +1,67 @@
+{% extends "base_auth.html" %}
+{% load static %}
+
+{% block titulo %}Login{% endblock titulo %}
+
+{% block contenido %}
+
+{% block formulario %}
+<div class="container-xxl">
+  <div class="authentication-wrapper authentication-basic container-p-y">
+    <div class="authentication-inner">
+      <!-- Login -->
+      <div class="card">
+        <div class="card-body">
+          <!-- Logo -->
+          <div class="text-center mb-4">
+            <img src="{% static 'img/cesmag.png' %}" alt="Logo" class="img-fluid" style="max-width: 90px;">
+          </div>
+          <!-- /Logo -->
+          <h4 class="mb-2 text-center">Sistema de gestion de actividades</h4>
+
+          <form id="formAuthentication" class="mb-3" action="{% url "login" %}" method="POST">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label for="{{ form.username.id_for_label }}" class="form-label">Usuario</label>
+              <input type="text" class="form-control" id="{{ form.username.id_for_label }}" name="{{ form.username.name }}"
+                placeholder="Ingresa tu Usuario" autofocus />
+              <span class="text-danger">{{ form.username.errors }}</span>
+            </div>
+
+            <div class="mb-3 form-password-toggle">
+              <div class="d-flex justify-content-between">
+                <label class="form-label" for="{{ form.password.id_for_label }}">Contraseña</label>
+                <a href="{% url 'password_reset' %}">
+                  <small>¿Has olvidado tu contraseña?</small>
+                </a>
+              </div>
+              
+              <div class="input-group input-group-merge">
+                <input type="password" id="{{ form.password.id_for_label }}" class="form-control" name="{{ form.password.name }}"
+                  placeholder="Ingresa tu contraseña" aria-describedby="password" />
+              </div>
+              <span class="text-danger">{{ form.password.errors }}</span>
+            </div>
+            <div class="mb-3">
+              <button class="btn btn-primary d-grid w-100" type="submit">Iniciar sesión</button>
+            </div>
+          </form>
+
+          <p class="text-center">
+            <span>¿Nuev@ en nuestra plataforma?</span>
+            <a href="">
+              <span>Crea una cuenta</span>
+            </a>
+          </p>
+        </div>
+      </div>
+      <!-- /Login -->
+    </div>
+  </div>
+</div>
+
+<!-- / Content -->
+
+{% endblock formulario %}
+
+{% endblock contenido %}

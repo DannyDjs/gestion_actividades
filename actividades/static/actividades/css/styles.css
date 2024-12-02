@@ -1,0 +1,28 @@
+
+/* Asegúrate que el clic en la columna de acciones no redirija a la página de edición */
+.acciones {
+    pointer-events: default; /* Evita que el clic se registre en esta celda */
+}
+
+.btn-flotante {
+    position: fixed;  /* Fija la posición en la pantalla, siempre visible */
+    bottom: 40px;     /* Puedes cambiar 'bottom' a 'top' si prefieres moverlo hacia arriba */
+    right: 30px;      /* Puedes cambiar 'right' a 'left' si prefieres moverlo hacia la izquierda */
+    
+    background-color: #1714e3;
+    color: white;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 30px;
+    box-shadow: 0px 4px 8px rgba(11, 11, 11, 0.412);
+    cursor: pointer;  /* Añade un cursor de mano para indicar que es clickeable */
+}
+.btn-flotante:hover {
+    background-color: #0056b3;
+    color: #fff; 
+}
+

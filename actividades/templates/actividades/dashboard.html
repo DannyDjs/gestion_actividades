@@ -1,0 +1,705 @@
+{% extends 'base_actividades.html' %}
+{% load static %}
+
+{% block titulo %}dashboard{% endblock titulo %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+
+{% endblock css %}
+{% block contenido %}
+
+<!-- Modal para Total de Actividades -->
+<div class="modal fade" id="totalActividadesModal" tabindex="-1" aria-labelledby="totalActividadesLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="totalActividadesLabel">Total de Actividades</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive-md">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nombre</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for actividad in total_actividades_lista %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td class="text-truncate" 
+                                style="max-width: 200px;" 
+                                data-bs-toggle="tooltip" 
+                                data-bs-placement="top" 
+                                title="{{ actividad.titulo }}">{{ actividad.titulo }}</td>
+                                <td>{{ actividad.estado }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Actividades Finalizadas -->
+<div class="modal fade" id="actividadesFinalizadasModal" tabindex="-1" aria-labelledby="actividadesFinalizadasLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="actividadesFinalizadasLabel">Actividades Finalizadas
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive-md">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nombre</th>
+                                <th>Descargar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for actividad in actividades_finalizadas_lista %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td class="text-truncate" 
+                                style="max-width: 200px;" 
+                                data-bs-toggle="tooltip" 
+                                data-bs-placement="top" 
+                                title="{{ actividad.titulo }}">{{ actividad.titulo }}</td>
+                                <td class="col-2">
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'descargar_reporte' actividad.id 'pdf' %}" class="btn btn-danger" target="_blank" data-bs-toggle="tooltip" title="PDF">
+                                            <i class="bx bxs-file-pdf"></i> <!-- Icono de archivo PDF -->
+                                        </a>
+                                        <a href="{% url 'descargar_reporte' actividad.id 'word' %}" class="btn btn-primary" data-bs-toggle="tooltip" title="Word">
+                                            <i class="bx bxs-file-doc"></i> <!-- Icono de archivo Word -->
+                                        </a>
+                                        <!-- <a href="{% url 'descargar_reporte' actividad.id 'ppt' %}" class="btn btn-warning" data-bs-toggle="tooltip" title="PowerPoint">
+                                            <i class="bx bx-file"></i> 
+                                        </a> -->
+                                        
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Actividades en Proceso -->
+<div class="modal fade" id="actividadesProcesoModal" tabindex="-1" aria-labelledby="actividadesProcesoLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="actividadesProcesoLabel">Actividades en Proceso</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nombre</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for actividad in actividades_proceso_lista %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td class="text-truncate" 
+                                style="max-width: 200px;" 
+                                data-bs-toggle="tooltip" 
+                                data-bs-placement="top" 
+                                title="{{ actividad.titulo }}">{{ actividad.titulo }}</td>
+                                <td>{{ actividad.estado }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Actividades Pendientes -->
+<div class="modal fade" id="actividadesPendientesModal" tabindex="-1" aria-labelledby="actividadesPendientesLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="actividadesPendientesLabel">Actividades Pendientes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive-md">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nombre</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for actividad in actividades_pendientes_lista %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td class="text-truncate" 
+                                style="max-width: 200px;" 
+                                data-bs-toggle="tooltip" 
+                                data-bs-placement="top" 
+                                title="{{ actividad.titulo }}">{{ actividad.titulo }}</td>
+                                <td>{{ actividad.estado }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Actividades Atrasadas -->
+<div class="modal fade" id="actividadesAtrasadasModal" tabindex="-1" aria-labelledby="actividadesAtrasadasLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="actividadesAtrasadasLabel">Actividades Atrasadas</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive-md">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Titulo Actividad</th>
+                                <th>Fecha fin</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for actividad in actividades_atrasadas %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td class="text-truncate" 
+                                style="max-width: 200px;" 
+                                data-bs-toggle="tooltip" 
+                                data-bs-placement="top" 
+                                title="{{ actividad.titulo }}">{{ actividad.titulo }}</td>
+                                <td>{{ actividad.fecha_fin }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+               
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Actividades Proximas a vencer -->
+<div class="modal fade" id="actividadesProximasModal" tabindex="-1" aria-labelledby="actividadesProximasLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="actividadesProximasLabel">Actividades Proximas</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive-md">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Titulo Actividad</th>
+                                <th>Fecha fin</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for actividad in actividades_proximas_vencer %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td class="text-truncate" 
+                                style="max-width: 200px;" 
+                                data-bs-toggle="tooltip" 
+                                data-bs-placement="top" 
+                                title="{{ actividad.titulo }}">{{ actividad.titulo }}</td>
+                                <td>{{ actividad.fecha_fin }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Tipo de Actividades -->
+<div class="modal fade" id="tipoActividadesModal" tabindex="-1" aria-labelledby="tipoActividadesLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tipoActividadesLabel">Tipo De Actividades</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive-md">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Tipo de Actividades</th>
+                                <th>Actividades</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for actividad in total_tipos_actividades_lista %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td class="text-truncate" 
+                                style="max-width: 200px;" 
+                                data-bs-toggle="tooltip" 
+                                data-bs-placement="top" 
+                                title="{{ actividad.nombre }}">{{ actividad.nombre }}</td>
+                                <td class="col-1">{{ actividad.cantidad }}</td>
+                                <td class="col-1">
+                                    <button class="btn btn-primary" 
+                                        onclick="cargarArbol({{ actividad.id }})" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#arbolModal">
+                                        Ver
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal para Árbol -->
+<div class="modal fade" id="arbolModal" tabindex="-1" aria-labelledby="arbolLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header d-flex align-items-center">
+                <!-- Rango de fechas alineado a la izquierda -->
+                
+                
+                <!-- Título centrado -->
+                <h5 class="modal-title mx-auto" id="arbolLabel">Árbol de Actividades</h5>
+                <!-- Botón de cerrar alineado a la derecha -->
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body ">
+                <!-- Contenedor donde se cargará el gráfico -->
+                <div id="treeChart"  style="max-width: 100%; width: 1050px; height: 600px; margin: 0 auto;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="row">
+    <!-- Actividades Próximas y Retrasadas -->
+    <div class="col-12 col-sm-6 col-lg-2 mb-4">
+        <!-- Tarjeta de Actividades Próximas -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="card-title d-flex align-items-start justify-content-between">
+                    <div class="avatar flex-shrink-0" data-bs-toggle="modal" data-bs-target="#actividadesProximasModal"
+                        style="cursor:pointer;">
+                        <span class="avatar-initial rounded bg-label-warning"><i class="bx bx-time-five"></i></span>
+                    </div>
+                </div>
+                <div data-bs-toggle="modal" data-bs-target="#actividadesProximasModal" style="cursor:pointer;">
+                    <h5>Actividades Próximas</h5>
+                    <h3 class="card-title text-nowrap mb-2">{{ num_actividades_proximas_vencer }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta de Actividades Retrasadas -->
+        <div class="card mb">
+            <div class="card-body">
+                <div class="card-title d-flex align-items-start justify-content-between">
+                    <div class="avatar flex-shrink-0" data-bs-target="#actividadesAtrasadasModal"
+                        style="cursor:pointer;">
+                        <span class="avatar-initial rounded bg-label-danger"><i class="bx bx-error-alt"></i></span>
+                    </div>
+                </div>
+                <div data-bs-toggle="modal" data-bs-target="#actividadesAtrasadasModal" style="cursor:pointer;">
+                    <h5>Actividades Retrasadas</h5>
+                    <h3 class="card-title mb-2">{{ num_actividades_atrasadas }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total de Actividades -->
+    <div class="col-12 col-sm-6 col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between pb-0">
+                <div class="card-title mb-0">
+                    <h5 class="m-0 me-2"></h5>
+                    <small class="text-muted"></small>
+                </div>
+                <div class="dropdown">
+                    <button class="btn p-0" type="button" id="orederStatistics" data-bs-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false">
+                        <i class="bx bx-dots-vertical-rounded"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="orederStatistics">
+                        <a class="dropdown-item" href="javascript:void(0);">Select All</a>
+                        <a class="dropdown-item" href="javascript:void(0);">Refresh</a>
+                        <a class="dropdown-item" href="javascript:void(0);">Share</a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex flex-column align-items-center gap-1 action" data-bs-toggle="modal"
+                        data-bs-target="#totalActividadesModal" style="cursor:pointer;">
+                        <h2 class="mb-2">{{ total_actividades }}</h2>
+                        <span>
+                            <h5>Total Actividades</h5>
+                        </span>
+                    </div>
+                        <div style="position: relative; height: 100%; width: 100%;">
+                            <canvas id="activityChart" style="width: 150px; height: 150px; margin: auto;"></canvas>
+                        </div>
+                    
+                    
+                </div>
+                <ul class="p-0 m-0">
+                    <li class="d-flex mb-4 pb-1 list-group-item-action" data-bs-toggle="modal"
+                        data-bs-target="#actividadesPendientesModal" style="cursor:pointer;">
+                        <div class="avatar flex-shrink-0 me-3">
+                            <span class="avatar-initial rounded bg-label-warning"><i class="bx bx-time-five"></i></span>
+                        </div>
+                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                            <h5 class="mb-0">Pendiente</h5>
+                            <h5 class="fw-semibold">{{ actividades_pendientes }}</h5>
+                        </div>
+                    </li>
+                    <li class="d-flex mb-4 pb-1 list-group-item-action" data-bs-toggle="modal"
+                        data-bs-target="#actividadesProcesoModal" style="cursor:pointer;">
+                        <div class="avatar flex-shrink-0 me-3">
+                            <span class="avatar-initial rounded bg-label-secondary"><i class="bx bx-loader-circle"></i></span>
+                        </div>
+                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                            <h5 class="mb-0">Proceso</h5>
+                            <h5 class="fw-semibold">{{ actividades_proceso }}</h5>
+                        </div>
+                    </li>
+                    <li class="d-flex list-group-item-action" data-bs-toggle="modal"
+                        data-bs-target="#actividadesFinalizadasModal" style="cursor:pointer;">
+                        <div class="avatar flex-shrink-0 me-3">
+                            <span class="avatar-initial rounded bg-label-success"><i class="bx bx-check-circle"></i></span>
+                        </div>
+                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                            <h5 class="mb-0">Finalizadas</h5>
+                            <h5 class="fw-semibold">{{ actividades_finalizadas }}</h5>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Colaboradores del Programa o Informes Pendientes -->
+    <div class="col-12 col-lg-6 mb-4">
+        {% if es_director %}
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Colaboradores del Programa</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Colaborador</th>
+                                <th>Actividades</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for colaborador in colaboradores %}
+                                <tr>
+                                    <td>{{ colaborador.first_name }} {{ colaborador.last_name }}</td>
+                                    <td class="col-1 text-center">{{ colaborador.total_actividades }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="2" class="text-center">No hay colaboradores disponibles.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% elif es_profesor %}
+            {% if informes_pendientes %}
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5>Informes Pendientes por Firmar</h5>
+                    </div>
+                    <div class="card-body custom-scroll mb-4" style="overflow-y: auto; max-height: 300px;">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Informe</th>
+                                    <th>Actividad</th>
+                                    <th>Fecha fin</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for informe_firmado in informes_pendientes %}
+                                    <tr class="table-row" onclick="window.location.href='{% if can_change_informe %}{% url 'editar_informe' informe_firmado.informe.id %}{% endif %}'" style="cursor:pointer;">
+                                        <td class="text-truncate" style="max-width: 200px;" data-bs-toggle="tooltip" title="{{ informe_firmado.informe.titulo }}">{{ informe_firmado.informe.titulo }}</td>
+                                        <td class="text-truncate" style="max-width: 200px;" data-bs-toggle="tooltip" title="{{ informe_firmado.informe.actividad.titulo }}">{{ informe_firmado.informe.actividad.titulo }}</td>
+                                        <td class="text-center">{{ informe_firmado.informe.fecha_fin|date:"d/m/Y" }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% else %}
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5>Informes Firmados por Mes</h5>
+                    </div>
+                    <div class="card-body">
+                        <div style="position: relative; height: 100%; width: 100%;">
+                            <canvas id="graficoInformesFirmados"></canvas>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        {% else %}
+            <p class="text-center">No tienes permisos para ver esta sección.</p>
+        {% endif %}
+    </div>
+</div>
+
+
+<div class="row">
+    <!-- Tipo de Actividades -->
+    <div class="col-lg-6 mb-4">
+        <!-- Tarjeta de Tipo de actividades -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="card-title d-flex align-items-start justify-content-between">
+                    <div class="avatar flex-shrink-0" data-bs-toggle="modal" data-bs-target="#tipoActividadesModal"
+                        style="cursor:pointer;">
+                        <span class="avatar-initial rounded bg-label-info"><i class="bx bx-book-open"></i></span>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn p-0" type="button" id="cardOpt4" data-bs-toggle="dropdown"
+                            aria-haspopup="true" aria-expanded="false">
+                            <i class="bx bx-dots-vertical-rounded"></i>
+                        </button>
+
+                        <!-- <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt4">
+                                <a class="dropdown-item" href="javascript:void(0);">View More</a>
+                                <a class="dropdown-item" href="javascript:void(0);">Delete</a>
+                            </div> -->
+
+                    </div>
+                </div>
+                <div data-bs-toggle="modal" data-bs-target="#tipoActividadesModal" style="cursor:pointer;">
+                    <span class="fw-semibold d-block mb-1">
+                        <h5>Tipo de Actividades</h5>
+                    </span>
+                    <h3 class="card-title text-nowrap mb-2">{{ total_tipos_actividades }}</h3>
+
+                </div>
+                <div class="card-body" data-bs-toggle="modal" data-bs-target="#tipoActividadesModal" style="cursor:pointer;">
+                    <canvas id="actividadesChart"></canvas>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 mb-4">
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Reporte General de Actividades</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" action="{% url 'generar_informe_pdf' %}" target="_blank">
+                <div class="form-group mb-2">
+                    <select class="form-control" id="estado" name="estado">
+                        <option value="">--Estado actividad--</option>
+                        <option value="pendiente">Pendiente</option>
+                        <option value="en proceso">En proceso</option>
+                        <option value="finalizada">Finalizada</option>
+                    </select>
+                </div>
+                <div class="form-group mb-2">
+                    <label for="fecha_inicio">Fecha de Inicio</label>
+                    <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio">
+                </div>
+                <div class="form-group mb-2">
+                    <label for="fecha_fin">Fecha de Fin</label>
+                    <input type="date" class="form-control" id="fecha_fin" name="fecha_fin">
+                </div>
+                <button type="submit" class="btn btn-primary mb-2">Generar Reporte</button>
+            </form>
+        </div>
+    </div>
+    </div>
+    
+</div> 
+
+{% endblock contenido %}
+
+{% block js %}
+<script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+
+<script>
+    function cargarArbol(tipoId) {
+        const chartDom = document.getElementById('treeChart');
+        const myChart = echarts.init(chartDom);
+    
+        // Mostrar un spinner mientras se cargan los datos
+        myChart.showLoading();
+    
+        // Usar la URL generada por Django, pasando las fechas
+        let url = "{% url 'obtener_arbol_tipo_actividad' 0 %}".replace('0', tipoId);
+    
+        // Solicitar datos del árbol al servidor
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('Error al cargar los datos:', data.error);
+                    myChart.hideLoading();
+                    return;
+                }
+                
+                // Configuración del árbol
+                const option = {
+                    tooltip: {
+                        trigger: 'item',
+                        triggerOn: 'mousemove',
+                        formatter: function (params) {
+                            return params.name;
+                        }
+                    },
+                    series: [
+                        {
+                            type: 'tree',
+                            data: [data],
+                            top: '10%',
+                            left: '10%',
+                            bottom: '10%',
+                            right: '10%',
+                            symbolSize: 15,
+                            edgeShape: 'polyline',
+                            edgeForkPosition: '63%',
+                            initialTreeDepth: 3,
+                            label: {
+                                backgroundColor: '#fff',
+                                borderColor: '#f57c00',
+                                borderWidth: 1,
+                                borderRadius: 5,
+                                padding: [4, 8],
+                                position: 'left',
+                                align: 'right',
+                                formatter: function (params) {
+                                    const name = params.name;
+                                    return name.length > 10 ? name.substring(0, 10) + '...' : name;
+                                },
+                                fontSize: 12,
+                                color: '#333'
+                            },
+                            lineStyle: {
+                                color: '#007bff',
+                                width: 2,
+                                type: 'solid'
+                            },
+                            leaves: {
+                                label: {
+                                    position: 'right',
+                                    align: 'left'
+                                }
+                            },
+                            emphasis: {
+                                focus: 'descendant'
+                            },
+                            expandAndCollapse: true,
+                            animationDuration: 550,
+                            animationDurationUpdate: 750
+                        }
+                    ]
+                };
+                
+                // Ocultar el spinner y cargar los datos
+                myChart.hideLoading();
+                myChart.setOption(option);
+            })
+            .catch(error => {
+                console.error('Error al cargar el árbol:', error);
+                myChart.hideLoading();
+            });
+    }
+    
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const actividadesData = {
+        pendientes: {{actividades_pendientes}},
+        en_proceso: {{actividades_proceso}},
+        finalizadas: {{actividades_finalizadas}}
+    };
+</script>
+<script>
+    const tipoactividadesData = {
+        tipo_labels: {{ tipo_labels|safe }},
+        actividad_counts: {{ actividad_counts|safe }}
+    };
+</script>
+<script>
+    const informesfirmadosData = {
+        etiquetas_meses: {{ etiquetas_meses|safe }},
+        datos_meses: {{ datos_meses|safe }},
+        
+    };
+</script>
+
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% endblock js %}

@@ -1,0 +1,514 @@
+{% extends "base_actividades.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block titulo %}Listar Usuarios{% endblock titulo %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+
+<!-- Bootstrap JS -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<style>
+    .dropdown-submenu {
+        position: relative;
+    }
+
+    .dropdown-submenu .dropdown-menu {
+        top: 0;
+        right: 100%;
+        margin-top: -5px;
+    }
+</style>
+{% endblock css %}
+{% block buscar %}
+<!-- Buscar -->
+{% if can_view_user %}
+<div class="navbar-nav align-items-center">
+    <div class="nav-item d-flex align-items-center">
+        <i class="bx bx-search fs-4 lh-0"></i>
+        <input id="search-bar" type="text" class="form-control border-0 shadow-none" placeholder="Buscar usuario..."
+            aria-label="Buscar..." />
+    </div>
+</div>
+{% endif %}
+<!-- /Buscar -->
+{% endblock buscar %}
+{% block contenido %}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Listar Usuarios</h5>
+        <div class="btn-group">
+            <button
+                type="button"
+                class="btn btn-outline-secondary dropdown-toggle"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+            >
+                Opciones
+            </button>
+            <ul class="dropdown-menu">
+                <li class="dropdown-submenu">
+                    <a class="dropdown-item dropdown-toggle" href="#">Gestión de Usuarios</a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalCargarCSV">Cargar Usuarios CSV</a></li>
+                    </ul>
+                </li>
+                
+            </ul>
+        </div>
+        
+    </div>
+
+    <div class="card-body">
+        <div
+            class="table-responsive-md table-responsive-sm table-responsive-lg table-responsive-xl table-responsive-xxl">
+            <!-- Tabla de Usuarios -->
+            <table class="table table-hover table-sm ">
+                <thead>
+                    <tr>
+                        <th>N°</th>
+                        <th>Nombre y Apellidos</th>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="usuario-list">
+                    {% for usuario in usuarios %}
+                    <tr>
+                        <td class="col-1">{{ forloop.counter }}</td>
+                        <td class="text-truncate" style="max-width: 200px;" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="{{ usuario.first_name }} {{ usuario.last_name }}">
+                            {{ usuario.first_name }} {{ usuario.last_name }} </td>
+                        <td class="text-truncate" style="max-width: 200px;" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="{{ usuario.email }}">{{ usuario.email }}</td>
+                        <td>{{ usuario.groups.first.name }}</td>
+
+                        <td class="acciones col-1">
+                            <div class="dropdown">
+                                <button type="button" class="btn p-0 dropdown-toggle hide-arrow"
+                                    data-bs-toggle="dropdown">
+                                    <i class="bx bx-dots-vertical-rounded"></i>
+                                </button>
+                                <div class="dropdown-menu">
+
+                                    {% if can_change_user %}
+                                    <a class="dropdown-item editar-usuario-btn" 
+                                        data-id="{{ usuario.id }}"
+                                        data-username="{{ usuario.username }}" 
+                                        data-password="{{ usuario.password }}"
+                                        data-nombre="{{ usuario.first_name }}" 
+                                        data-apellido="{{ usuario.last_name }}"
+                                        data-correo="{{ usuario.email }}" 
+                                        data-rol="{{ usuario.groups.first.id }}"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#editarUsuarioModal">
+                                        <i class="bx bx-edit me-2"></i> Editar
+                                    </a>
+                                    {% endif %}
+
+                                    
+                                    <a class="dropdown-item {% if not can_delete_user %}disabled{% endif %}" href="#" data-bs-toggle="modal"
+                                        data-bs-target="#confirmDeleteModal"
+                                        onclick="setDeleteFormAction('{% url 'eliminar_usuario' usuario.id %}')">
+                                        <i class="bx bx-trash me-2"></i> Eliminar
+                                    </a>
+                                    
+
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No hay usuarios registrados.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Controles de Paginación -->
+        <!-- 
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}"
+                                    aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </span>
+                            </li>
+                            {% endif %}
+
+                            {% for page in page_obj.paginator.page_range %}
+                            <li class="page-item {% if page == page_obj.number %}active{% endif %}">
+                                <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+                            </li>
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </span>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                     -->
+
+        <!-- Controles de Paginación -->
+        <div class="demo-inline-spacing">
+            <nav aria-label="Paginación">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Anterior">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Página {{ page_obj.number }} de
+                            {{ page_obj.paginator.num_pages }}</span>
+                    </li>
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Siguiente">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Botón flotante para agregar usuarios -->
+{% if can_add_user %}
+<button class="btn-flotante" data-bs-toggle="modal" data-bs-target="#agregarUsuarioModal">+</button>
+{% endif %}
+
+<!-- Modal agregar usuario -->
+<div class="modal fade" id="agregarUsuarioModal" tabindex="-1" aria-labelledby="miModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="miModalLabel">AGREGAR USUARIO</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="card-body">
+                <form method="post" id="formularioAgregarUsuario">
+                    {% csrf_token %}
+                    {% for field in form_usuario %}
+                    <div class="form-group mb-3">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field|add_class:"form-control" }}
+                        {% if field.help_text %}
+                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="submit" class="btn btn-primary">Guardar Usuario</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal eliminar usuario -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que deseas eliminar este usuario?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="delete-form" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal editar usuario -->
+<div class="modal fade" id="editarUsuarioModal" tabindex="-1" aria-labelledby="editarUsuarioModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarUsuarioModalLabel">EDITAR USUARIO</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="formularioEditarUsuario">
+                    {% csrf_token %}
+                    <input type="hidden" id="usuario-id" name="usuario_id" value="">
+
+                    {% for field in form_usuario %}
+                    <div class="form-group mb-3">
+
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field|add_class:"form-control" }}
+                        {% if field.help_text %}
+                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para cargar el archivo CSV -->
+<div class="modal fade" id="modalCargarCSV" tabindex="-1" aria-labelledby="modalCargarCSVLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCargarCSVLabel">Cargar Usuarios CSV</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Formulario para cargar el archivo CSV -->
+                <form method="post" enctype="multipart/form-data" action="{% url 'cargar_usuarios_csv' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="archivo_csv" class="form-label">Selecciona un archivo CSV</label>
+                        <input class="form-control" type="file" name="archivo_csv" id="archivo_csv" accept=".csv"
+                            required>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="submit" class="btn btn-primary">Cargar Usuarios</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock contenido %}
+{% block js %}
+<script>
+    $('#agregarUsuarioModal').on('shown.bs.modal', function() {
+        $(document).ready(function() {
+            $("#formularioAgregarUsuario").submit(function(event) {
+                event.preventDefault(); // Evita el comportamiento normal del formulario
+                let formData = new FormData(this); // Serializa los datos del formulario
+                $.ajax({
+                    url: "{% url 'agregar_usuario' %}", // La URL para enviar los datos
+                    type: "POST",
+                    data: formData,
+                    processData: false, // No procesar los datos
+                    contentType: false, // No establecer el tipo de contenido
+                    success: function(response) {
+                        // Si se guarda exitosamente, puedes hacer algo como cerrar el modal
+                        $("#agregarUsuarioModal").modal('hide');
+                        location
+                            .reload(); // Recargar la página para ver los cambios
+                    },
+                    error: function(response) {
+                        alert(
+                            "Hubo un problema al guardar el usuario. Intenta de nuevo."
+                            );
+                    }
+                });
+            });
+        });
+    });
+</script>
+<script>
+    function setDeleteFormAction(action) {
+        const form = document.getElementById('delete-form');
+        form.action = action;
+    }
+</script>
+
+<script>
+    $(document).ready(function() {
+        $(document).on('click', '.editar-usuario-btn', function(event) {
+            const button = $(this); // Botón que activó el modal
+            const id = button.data('id'); // Extraer la información de los atributos data-*
+            const username = button.data('username');
+            const password = button.data('password');
+            const nombre = button.data('nombre');
+            const apellido = button.data('apellido');
+            const correo = button.data('correo');
+            const rol = button.data('rol');
+
+            const modal = $('#editarUsuarioModal');
+        
+            // Llenar el formulario con los datos del usuario
+            modal.find('#usuario-id').val(id);
+            modal.find('input[name="username"]').val(username);
+            modal.find('input[name="password"]').val(password);
+            modal.find('input[name="first_name"]').val(nombre);
+            modal.find('input[name="last_name"]').val(apellido);
+            modal.find('input[name="email"]').val(correo);
+            modal.find('select[name="group"]').val(rol);
+        
+            // Abrir el modal
+            modal.modal('show');
+        });
+        $("#formularioEditarUsuario").submit(function(event) {
+            event.preventDefault(); // Evita el comportamiento normal del formulario
+            let formData = new FormData(this); // Serializa los datos del formulario
+            $.ajax({
+                url: "{% url 'editar_usuario' %}", // La URL para enviar los datos
+                type: "POST",
+                data: formData,
+                processData: false, // Evitar que jQuery procese los datos
+                contentType: false, // Evitar que jQuery establezca el contentType
+                success: function(response) {
+                    // Si se guarda exitosamente, puedes hacer algo como cerrar el modal
+                    $("#editarUsuarioModal").modal('hide');
+                    // Aquí puedes actualizar la lista de actividades o notificar al usuario
+                    location.reload();
+                },
+                error: function(response) {
+                    // Si hay algún error, puedes mostrar un mensaje de error
+                    alert("Hubo un problema al guardar los cambios. Intenta de nuevo.");
+                }
+            });
+        });
+    });
+</script>
+
+<script>
+    document.getElementById('search-bar').addEventListener('input', function () {
+        const query = this.value.trim();  // Texto ingresado en el campo de búsqueda
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;  // Token CSRF
+        const url = `{% url 'listar_usuarios' %}?q=${encodeURIComponent(query)}`;  // URL con el parámetro de búsqueda
+    
+        fetch(url, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',  // Identificar la solicitud como AJAX
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.getElementById('usuario-list');  // Contenedor de la tabla
+            tbody.innerHTML = '';  // Limpiar el contenido previo
+
+            if (data.usuarios.length > 0) {
+                data.usuarios.forEach((usuario, index) => {
+                    const deleteUrl = "{% url 'eliminar_usuario' '0' %}".replace('0', usuario.id);  // URL de eliminación
+                    const row = `
+                        <tr>
+                            <td class="col-1">${index + 1}</td>
+                            <td class="text-truncate" 
+                                style="max-width: 200px;" 
+                                data-bs-toggle="tooltip" 
+                                data-bs-placement="top" 
+                                title="${usuario.first_name} ${usuario.last_name}">
+                                ${usuario.first_name} ${usuario.last_name}
+                            </td>
+                            <td class="text-truncate" style="max-width: 200px;" 
+                                data-bs-toggle="tooltip" 
+                                data-bs-placement="top" 
+                                title="${usuario.email}">${usuario.email}</td>
+                            <td>${usuario.groups[0]?.name || 'Sin Rol'}</td>
+                            <td class="acciones col-1">
+                                <div class="dropdown">
+                                    <button type="button" class="btn p-0 dropdown-toggle hide-arrow"
+                                        data-bs-toggle="dropdown">
+                                        <i class="bx bx-dots-vertical-rounded"></i>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        {% if can_change_user %}
+                                        <a class="dropdown-item editar-usuario-btn" 
+                                            data-id="${usuario.id}"
+                                            data-username="${usuario.username}" 
+                                            data-password="${usuario.password}"
+                                            data-nombre="${usuario.first_name}"
+                                            data-apellido="${usuario.last_name}"
+                                            data-correo="${usuario.email}"
+                                            data-rol="${usuario.groups[0]?.id || ''}" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editarUsuarioModal" >
+                                            <i class="bx bx-edit me-2"></i> Editar
+                                        </a>
+                                        {% endif %}
+                                        {% if can_delete_user %}
+                                            <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                data-bs-target="#confirmDeleteModal"
+                                                onclick="setDeleteFormAction('${deleteUrl}')">
+                                                <i class="bx bx-trash me-2"></i> Eliminar
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>`;
+                    tbody.innerHTML += row;  
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center">No se encontraron resultados.</td></tr>`;
+            }
+        })
+        .catch(error => console.error('Error:', error)); 
+    });
+    
+</script>
+
+<script>
+    // Permite que los submenús se desplieguen correctamente en Bootstrap 5
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.dropdown-submenu').forEach(function (element) {
+            element.addEventListener('mouseover', function () {
+                const submenu = element.querySelector('.dropdown-menu');
+                if (submenu) {
+                    submenu.style.display = 'block';
+                }
+            });
+
+            element.addEventListener('mouseout', function () {
+                const submenu = element.querySelector('.dropdown-menu');
+                if (submenu) {
+                    submenu.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+
+
+{% endblock js %}
